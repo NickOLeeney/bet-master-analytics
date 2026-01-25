@@ -1,0 +1,533 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+  </head>
+  <body>
+    <style>#sk-container-id-1 {
+  /* Definition of color scheme common for light and dark mode */
+  --sklearn-color-text: #000;
+  --sklearn-color-text-muted: #666;
+  --sklearn-color-line: gray;
+  /* Definition of color scheme for unfitted estimators */
+  --sklearn-color-unfitted-level-0: #fff5e6;
+  --sklearn-color-unfitted-level-1: #f6e4d2;
+  --sklearn-color-unfitted-level-2: #ffe0b3;
+  --sklearn-color-unfitted-level-3: chocolate;
+  /* Definition of color scheme for fitted estimators */
+  --sklearn-color-fitted-level-0: #f0f8ff;
+  --sklearn-color-fitted-level-1: #d4ebff;
+  --sklearn-color-fitted-level-2: #b3dbfd;
+  --sklearn-color-fitted-level-3: cornflowerblue;
+
+  /* Specific color for light theme */
+  --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+  --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, white)));
+  --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+  --sklearn-color-icon: #696969;
+
+  @media (prefers-color-scheme: dark) {
+    /* Redefinition of color scheme for dark theme */
+    --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+    --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, #111)));
+    --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+    --sklearn-color-icon: #878787;
+  }
+}
+
+#sk-container-id-1 {
+  color: var(--sklearn-color-text);
+}
+
+#sk-container-id-1 pre {
+  padding: 0;
+}
+
+#sk-container-id-1 input.sk-hidden--visually {
+  border: 0;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+#sk-container-id-1 div.sk-dashed-wrapped {
+  border: 1px dashed var(--sklearn-color-line);
+  margin: 0 0.4em 0.5em 0.4em;
+  box-sizing: border-box;
+  padding-bottom: 0.4em;
+  background-color: var(--sklearn-color-background);
+}
+
+#sk-container-id-1 div.sk-container {
+  /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
+     but bootstrap.min.css set `[hidden] { display: none !important; }`
+     so we also need the `!important` here to be able to override the
+     default hidden behavior on the sphinx rendered scikit-learn.org.
+     See: https://github.com/scikit-learn/scikit-learn/issues/21755 */
+  display: inline-block !important;
+  position: relative;
+}
+
+#sk-container-id-1 div.sk-text-repr-fallback {
+  display: none;
+}
+
+div.sk-parallel-item,
+div.sk-serial,
+div.sk-item {
+  /* draw centered vertical line to link estimators */
+  background-image: linear-gradient(var(--sklearn-color-text-on-default-background), var(--sklearn-color-text-on-default-background));
+  background-size: 2px 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/* Parallel-specific style estimator block */
+
+#sk-container-id-1 div.sk-parallel-item::after {
+  content: "";
+  width: 100%;
+  border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
+  flex-grow: 1;
+}
+
+#sk-container-id-1 div.sk-parallel {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background-color: var(--sklearn-color-background);
+  position: relative;
+}
+
+#sk-container-id-1 div.sk-parallel-item {
+  display: flex;
+  flex-direction: column;
+}
+
+#sk-container-id-1 div.sk-parallel-item:first-child::after {
+  align-self: flex-end;
+  width: 50%;
+}
+
+#sk-container-id-1 div.sk-parallel-item:last-child::after {
+  align-self: flex-start;
+  width: 50%;
+}
+
+#sk-container-id-1 div.sk-parallel-item:only-child::after {
+  width: 0;
+}
+
+/* Serial-specific style estimator block */
+
+#sk-container-id-1 div.sk-serial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--sklearn-color-background);
+  padding-right: 1em;
+  padding-left: 1em;
+}
+
+
+/* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
+clickable and can be expanded/collapsed.
+- Pipeline and ColumnTransformer use this feature and define the default style
+- Estimators will overwrite some part of the style using the `sk-estimator` class
+*/
+
+/* Pipeline and ColumnTransformer style (default) */
+
+#sk-container-id-1 div.sk-toggleable {
+  /* Default theme specific background. It is overwritten whether we have a
+  specific estimator or a Pipeline/ColumnTransformer */
+  background-color: var(--sklearn-color-background);
+}
+
+/* Toggleable label */
+#sk-container-id-1 label.sk-toggleable__label {
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0.5em;
+  box-sizing: border-box;
+  text-align: center;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+#sk-container-id-1 label.sk-toggleable__label .caption {
+  font-size: 0.6rem;
+  font-weight: lighter;
+  color: var(--sklearn-color-text-muted);
+}
+
+#sk-container-id-1 label.sk-toggleable__label-arrow:before {
+  /* Arrow on the left of the label */
+  content: "▸";
+  float: left;
+  margin-right: 0.25em;
+  color: var(--sklearn-color-icon);
+}
+
+#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {
+  color: var(--sklearn-color-text);
+}
+
+/* Toggleable content - dropdown */
+
+#sk-container-id-1 div.sk-toggleable__content {
+  max-height: 0;
+  max-width: 0;
+  overflow: hidden;
+  text-align: left;
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content.fitted {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content pre {
+  margin: 0.2em;
+  border-radius: 0.25em;
+  color: var(--sklearn-color-text);
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content.fitted pre {
+  /* unfitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+  /* Expand drop-down */
+  max-height: 200px;
+  max-width: 100%;
+  overflow: auto;
+}
+
+#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+  content: "▾";
+}
+
+/* Pipeline/ColumnTransformer-specific style */
+
+#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Estimator-specific style */
+
+/* Colorize estimator box */
+#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+#sk-container-id-1 div.sk-label label.sk-toggleable__label,
+#sk-container-id-1 div.sk-label label {
+  /* The background is the default theme color */
+  color: var(--sklearn-color-text-on-default-background);
+}
+
+/* On hover, darken the color of the background */
+#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+/* Label box, darken color on hover, fitted */
+#sk-container-id-1 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Estimator label */
+
+#sk-container-id-1 div.sk-label label {
+  font-family: monospace;
+  font-weight: bold;
+  display: inline-block;
+  line-height: 1.2em;
+}
+
+#sk-container-id-1 div.sk-label-container {
+  text-align: center;
+}
+
+/* Estimator-specific */
+#sk-container-id-1 div.sk-estimator {
+  font-family: monospace;
+  border: 1px dotted var(--sklearn-color-border-box);
+  border-radius: 0.25em;
+  box-sizing: border-box;
+  margin-bottom: 0.5em;
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+/* on hover */
+#sk-container-id-1 div.sk-estimator:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Specification for estimator info (e.g. "i" and "?") */
+
+/* Common style for "i" and "?" */
+
+.sk-estimator-doc-link,
+a:link.sk-estimator-doc-link,
+a:visited.sk-estimator-doc-link {
+  float: right;
+  font-size: smaller;
+  line-height: 1em;
+  font-family: monospace;
+  background-color: var(--sklearn-color-background);
+  border-radius: 1em;
+  height: 1em;
+  width: 1em;
+  text-decoration: none !important;
+  margin-left: 0.5em;
+  text-align: center;
+  /* unfitted */
+  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+  color: var(--sklearn-color-unfitted-level-1);
+}
+
+.sk-estimator-doc-link.fitted,
+a:link.sk-estimator-doc-link.fitted,
+a:visited.sk-estimator-doc-link.fitted {
+  /* fitted */
+  border: var(--sklearn-color-fitted-level-1) 1pt solid;
+  color: var(--sklearn-color-fitted-level-1);
+}
+
+/* On hover */
+div.sk-estimator:hover .sk-estimator-doc-link:hover,
+.sk-estimator-doc-link:hover,
+div.sk-label-container:hover .sk-estimator-doc-link:hover,
+.sk-estimator-doc-link:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+div.sk-estimator.fitted:hover .sk-estimator-doc-link.fitted:hover,
+.sk-estimator-doc-link.fitted:hover,
+div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
+.sk-estimator-doc-link.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+/* Span, style for the box shown on hovering the info icon */
+.sk-estimator-doc-link span {
+  display: none;
+  z-index: 9999;
+  position: relative;
+  font-weight: normal;
+  right: .2ex;
+  padding: .5ex;
+  margin: .5ex;
+  width: min-content;
+  min-width: 20ex;
+  max-width: 50ex;
+  color: var(--sklearn-color-text);
+  box-shadow: 2pt 2pt 4pt #999;
+  /* unfitted */
+  background: var(--sklearn-color-unfitted-level-0);
+  border: .5pt solid var(--sklearn-color-unfitted-level-3);
+}
+
+.sk-estimator-doc-link.fitted span {
+  /* fitted */
+  background: var(--sklearn-color-fitted-level-0);
+  border: var(--sklearn-color-fitted-level-3);
+}
+
+.sk-estimator-doc-link:hover span {
+  display: block;
+}
+
+/* "?"-specific style due to the `<a>` HTML tag */
+
+#sk-container-id-1 a.estimator_doc_link {
+  float: right;
+  font-size: 1rem;
+  line-height: 1em;
+  font-family: monospace;
+  background-color: var(--sklearn-color-background);
+  border-radius: 1rem;
+  height: 1rem;
+  width: 1rem;
+  text-decoration: none;
+  /* unfitted */
+  color: var(--sklearn-color-unfitted-level-1);
+  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+}
+
+#sk-container-id-1 a.estimator_doc_link.fitted {
+  /* fitted */
+  border: var(--sklearn-color-fitted-level-1) 1pt solid;
+  color: var(--sklearn-color-fitted-level-1);
+}
+
+/* On hover */
+#sk-container-id-1 a.estimator_doc_link:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+#sk-container-id-1 a.estimator_doc_link.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-3);
+}
+</style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>Pipeline(steps=[(&#x27;column_selector&#x27;,
+                 ColumnSelector(cols=[&#x27;goalNoGoal_stats_avgGoalTakenAway&#x27;,
+                                      &#x27;underOver_quote_currentO&#x27;,
+                                      &#x27;goalNoGoal_chance_goal&#x27;,
+                                      &#x27;chance1x2_chance_p2&#x27;,
+                                      &#x27;chance1x2_chance_pHtx&#x27;,
+                                      &#x27;chance1x2_chance_p2Ht2x&#x27;,
+                                      &#x27;chance1x2_comparison_affini&#x27;,
+                                      &#x27;underOver_chance_over35&#x27;,
+                                      &#x27;underOver_chance_under15&#x27;,
+                                      &#x27;chance1x2_flashback_px&#x27;,
+                                      &#x27;goalNoGoal_multigoal_m35&#x27;...
+                                                   &#x27;chance1x2_quote_diffInitialCurr1&#x27;,
+                                                   &#x27;chance1x2_quote_diffRealCurr1&#x27;,
+                                                   &#x27;goalNoGoal_quote_realGG&#x27;,
+                                                   &#x27;chance1x2_flashback_pHt1&#x27;,
+                                                   &#x27;underOver_chance_over15HT&#x27;,
+                                                   &#x27;chance1x2_quote_diffRealCurr2&#x27;,
+                                                   &#x27;goalNoGoal_comparison_affini&#x27;,
+                                                   &#x27;goalNoGoal_multigoal_m24Home&#x27;, ...])])),
+                (&#x27;classifier&#x27;,
+                 LogisticRegression(C=0.008107306487633793, penalty=&#x27;l1&#x27;,
+                                    random_state=495629405, solver=&#x27;saga&#x27;))])</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" ><label for="sk-estimator-id-1" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>Pipeline</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.pipeline.Pipeline.html">?<span>Documentation for Pipeline</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>Pipeline(steps=[(&#x27;column_selector&#x27;,
+                 ColumnSelector(cols=[&#x27;goalNoGoal_stats_avgGoalTakenAway&#x27;,
+                                      &#x27;underOver_quote_currentO&#x27;,
+                                      &#x27;goalNoGoal_chance_goal&#x27;,
+                                      &#x27;chance1x2_chance_p2&#x27;,
+                                      &#x27;chance1x2_chance_pHtx&#x27;,
+                                      &#x27;chance1x2_chance_p2Ht2x&#x27;,
+                                      &#x27;chance1x2_comparison_affini&#x27;,
+                                      &#x27;underOver_chance_over35&#x27;,
+                                      &#x27;underOver_chance_under15&#x27;,
+                                      &#x27;chance1x2_flashback_px&#x27;,
+                                      &#x27;goalNoGoal_multigoal_m35&#x27;...
+                                                   &#x27;chance1x2_quote_diffInitialCurr1&#x27;,
+                                                   &#x27;chance1x2_quote_diffRealCurr1&#x27;,
+                                                   &#x27;goalNoGoal_quote_realGG&#x27;,
+                                                   &#x27;chance1x2_flashback_pHt1&#x27;,
+                                                   &#x27;underOver_chance_over15HT&#x27;,
+                                                   &#x27;chance1x2_quote_diffRealCurr2&#x27;,
+                                                   &#x27;goalNoGoal_comparison_affini&#x27;,
+                                                   &#x27;goalNoGoal_multigoal_m24Home&#x27;, ...])])),
+                (&#x27;classifier&#x27;,
+                 LogisticRegression(C=0.008107306487633793, penalty=&#x27;l1&#x27;,
+                                    random_state=495629405, solver=&#x27;saga&#x27;))])</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-2" type="checkbox" ><label for="sk-estimator-id-2" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>ColumnSelector</div></div></label><div class="sk-toggleable__content fitted"><pre>ColumnSelector(cols=[&#x27;goalNoGoal_stats_avgGoalTakenAway&#x27;,
+                     &#x27;underOver_quote_currentO&#x27;, &#x27;goalNoGoal_chance_goal&#x27;,
+                     &#x27;chance1x2_chance_p2&#x27;, &#x27;chance1x2_chance_pHtx&#x27;,
+                     &#x27;chance1x2_chance_p2Ht2x&#x27;, &#x27;chance1x2_comparison_affini&#x27;,
+                     &#x27;underOver_chance_over35&#x27;, &#x27;underOver_chance_under15&#x27;,
+                     &#x27;chance1x2_flashback_px&#x27;, &#x27;goalNoGoal_multigoal_m35&#x27;,
+                     &#x27;underOver_bookkeeping_u&#x27;, &#x27;goalNoG...
+                     &#x27;chance1x2_chance_p2Ht12&#x27;, &#x27;goalNoGoal_chance_goalHome&#x27;,
+                     &#x27;underOver_chance_over25&#x27;, &#x27;chance1x2_chance_p1x&#x27;,
+                     &#x27;chance1x2_quote_diffInitialCurr1&#x27;,
+                     &#x27;chance1x2_quote_diffRealCurr1&#x27;, &#x27;goalNoGoal_quote_realGG&#x27;,
+                     &#x27;chance1x2_flashback_pHt1&#x27;, &#x27;underOver_chance_over15HT&#x27;,
+                     &#x27;chance1x2_quote_diffRealCurr2&#x27;,
+                     &#x27;goalNoGoal_comparison_affini&#x27;,
+                     &#x27;goalNoGoal_multigoal_m24Home&#x27;, ...])</pre></div> </div></div><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-3" type="checkbox" ><label for="sk-estimator-id-3" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>preprocessor: ColumnTransformer</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.compose.ColumnTransformer.html">?<span>Documentation for preprocessor: ColumnTransformer</span></a></div></label><div class="sk-toggleable__content fitted"><pre>ColumnTransformer(remainder=&#x27;passthrough&#x27;, sparse_threshold=0,
+                  transformers=[(&#x27;timestamp_time&#x27;,
+                                 Pipeline(steps=[(&#x27;impute_time&#x27;,
+                                                  DatetimeImputer()),
+                                                 (&#x27;transform_time&#x27;,
+                                                  TimestampTransformer()),
+                                                 (&#x27;onehot_encode_time&#x27;,
+                                                  ColumnTransformer(remainder=&#x27;passthrough&#x27;,
+                                                                    transformers=[(&#x27;ohe&#x27;,
+                                                                                   OneHotEncoder(sparse=False),
+                                                                                   [10])])),
+                                                 (&#x27;standardize_time&#x27;,
+                                                  StandardScaler())]),
+                                 [&#x27;t...
+                                  &#x27;chance1x2_chance_p2Ht12&#x27;,
+                                  &#x27;goalNoGoal_chance_goalHome&#x27;,
+                                  &#x27;underOver_chance_over25&#x27;,
+                                  &#x27;chance1x2_chance_p1x&#x27;,
+                                  &#x27;chance1x2_quote_diffInitialCurr1&#x27;,
+                                  &#x27;chance1x2_quote_diffRealCurr1&#x27;,
+                                  &#x27;goalNoGoal_quote_realGG&#x27;,
+                                  &#x27;chance1x2_flashback_pHt1&#x27;,
+                                  &#x27;underOver_chance_over15HT&#x27;,
+                                  &#x27;chance1x2_quote_diffRealCurr2&#x27;,
+                                  &#x27;goalNoGoal_comparison_affini&#x27;,
+                                  &#x27;goalNoGoal_multigoal_m24Home&#x27;, ...])])</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox" ><label for="sk-estimator-id-4" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>timestamp_time</div></div></label><div class="sk-toggleable__content fitted"><pre>[&#x27;time&#x27;]</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" ><label for="sk-estimator-id-5" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>DatetimeImputer</div></div></label><div class="sk-toggleable__content fitted"><pre>DatetimeImputer()</pre></div> </div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>TimestampTransformer</div></div></label><div class="sk-toggleable__content fitted"><pre>TimestampTransformer()</pre></div> </div></div><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>onehot_encode_time: ColumnTransformer</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.compose.ColumnTransformer.html">?<span>Documentation for onehot_encode_time: ColumnTransformer</span></a></div></label><div class="sk-toggleable__content fitted"><pre>ColumnTransformer(remainder=&#x27;passthrough&#x27;,
+                  transformers=[(&#x27;ohe&#x27;, OneHotEncoder(sparse=False), [10])])</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-8" type="checkbox" ><label for="sk-estimator-id-8" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>ohe</div></div></label><div class="sk-toggleable__content fitted"><pre>[10]</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-9" type="checkbox" ><label for="sk-estimator-id-9" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>OneHotEncoder</div></div></label><div class="sk-toggleable__content fitted"><pre>OneHotEncoder(sparse=False)</pre></div> </div></div></div></div></div><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-10" type="checkbox" ><label for="sk-estimator-id-10" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>remainder</div></div></label><div class="sk-toggleable__content fitted"><pre></pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-11" type="checkbox" ><label for="sk-estimator-id-11" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>passthrough</div></div></label><div class="sk-toggleable__content fitted"><pre>passthrough</pre></div> </div></div></div></div></div></div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-12" type="checkbox" ><label for="sk-estimator-id-12" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>StandardScaler</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></div></label><div class="sk-toggleable__content fitted"><pre>StandardScaler()</pre></div> </div></div></div></div></div></div></div><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-13" type="checkbox" ><label for="sk-estimator-id-13" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>boolean</div></div></label><div class="sk-toggleable__content fitted"><pre>[&#x27;chance1x2_bookkeeping_arrow&#x27;, &#x27;goalNoGoal_bookkeeping_arrow&#x27;, &#x27;underOver_bookkeeping_arrow&#x27;]</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-14" type="checkbox" ><label for="sk-estimator-id-14" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>&lt;lambda&gt;</div><div class="caption">FunctionTransformer</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.FunctionTransformer.html">?<span>Documentation for FunctionTransformer</span></a></div></label><div class="sk-toggleable__content fitted"><pre>FunctionTransformer(func=&lt;function &lt;lambda&gt; at 0x12a266670&gt;)</pre></div> </div></div><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-15" type="checkbox" ><label for="sk-estimator-id-15" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>imputers: ColumnTransformer</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.compose.ColumnTransformer.html">?<span>Documentation for imputers: ColumnTransformer</span></a></div></label><div class="sk-toggleable__content fitted"><pre>ColumnTransformer(remainder=&#x27;passthrough&#x27;, transformers=[])</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-16" type="checkbox" ><label for="sk-estimator-id-16" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>remainder</div></div></label><div class="sk-toggleable__content fitted"><pre></pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-17" type="checkbox" ><label for="sk-estimator-id-17" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>passthrough</div></div></label><div class="sk-toggleable__content fitted"><pre>passthrough</pre></div> </div></div></div></div></div></div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-18" type="checkbox" ><label for="sk-estimator-id-18" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>OneHotEncoder</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.OneHotEncoder.html">?<span>Documentation for OneHotEncoder</span></a></div></label><div class="sk-toggleable__content fitted"><pre>OneHotEncoder(drop=&#x27;first&#x27;, handle_unknown=&#x27;ignore&#x27;)</pre></div> </div></div></div></div></div></div></div><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-19" type="checkbox" ><label for="sk-estimator-id-19" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>numerical</div></div></label><div class="sk-toggleable__content fitted"><pre>[&#x27;goalNoGoal_stats_avgGoalTakenAway&#x27;, &#x27;underOver_quote_currentO&#x27;, &#x27;goalNoGoal_chance_goal&#x27;, &#x27;chance1x2_chance_p2&#x27;, &#x27;chance1x2_chance_pHtx&#x27;, &#x27;chance1x2_chance_p2Ht2x&#x27;, &#x27;chance1x2_comparison_affini&#x27;, &#x27;underOver_chance_over35&#x27;, &#x27;underOver_chance_under15&#x27;, &#x27;chance1x2_flashback_px&#x27;, &#x27;goalNoGoal_multigoal_m35&#x27;, &#x27;underOver_bookkeeping_u&#x27;, &#x27;goalNoGoal_multigoal_m14&#x27;, &#x27;chance1x2_chance_pHt1&#x27;, &#x27;goalNoGoal_chance_goalAway&#x27;, &#x27;chance1x2_quote_real2&#x27;, &#x27;goalNoGoal_chance_even&#x27;, &#x27;chance1x2_quote_diffInitialCurrx&#x27;, &#x27;chance1x2_chance_p2Ht12&#x27;, &#x27;goalNoGoal_chance_goalHome&#x27;, &#x27;underOver_chance_over25&#x27;, &#x27;chance1x2_chance_p1x&#x27;, &#x27;chance1x2_quote_diffInitialCurr1&#x27;, &#x27;chance1x2_quote_diffRealCurr1&#x27;, &#x27;goalNoGoal_quote_realGG&#x27;, &#x27;chance1x2_flashback_pHt1&#x27;, &#x27;underOver_chance_over15HT&#x27;, &#x27;chance1x2_quote_diffRealCurr2&#x27;, &#x27;goalNoGoal_comparison_affini&#x27;, &#x27;goalNoGoal_multigoal_m24Home&#x27;, &#x27;evaluation_valUnderOver&#x27;, &#x27;underOver_flashback_under35&#x27;, &#x27;chance1x2_bookkeeping_status&#x27;, &#x27;goalNoGoal_bookkeeping_actual&#x27;, &#x27;goalNoGoal_multigoal_m24Away&#x27;, &#x27;chance1x2_flashback_pHtx&#x27;, &#x27;chance1x2_bookkeeping_p1&#x27;, &#x27;chance1x2_quote_initial1&#x27;, &#x27;goalNoGoal_chance_noGoal&#x27;, &#x27;underOver_chance_under05HT&#x27;, &#x27;underOver_quote_realU&#x27;, &#x27;underOver_chance_over052HT&#x27;, &#x27;chance1x2_chance_px&#x27;, &#x27;underOver_bookkeeping_status&#x27;, &#x27;evaluation_valScala&#x27;, &#x27;underOver_chance_over05HT&#x27;, &#x27;underOver_quote_diffRealCurrU&#x27;, &#x27;underOver_quote_realO&#x27;, &#x27;underOver_comparison_flashback&#x27;, &#x27;goalNoGoal_stats_avgGoalHome&#x27;, &#x27;chance1x2_chance_p2Ht1x&#x27;, &#x27;underOver_comparison_affini&#x27;, &#x27;underOver_chance_under15HT&#x27;, &#x27;chance1x2_flashback_pHt2&#x27;, &#x27;goalNoGoal_multigoal_m13&#x27;, &#x27;underOver_quote_diffInitialCurrU&#x27;, &#x27;goalNoGoal_quote_diffRealCurrGG&#x27;, &#x27;goalNoGoal_stats_avgGoalTakenHome&#x27;, &#x27;goalNoGoal_quote_realNG&#x27;, &#x27;goalNoGoal_quote_diffInitialCurrGG&#x27;, &#x27;chance1x2_chance_p1&#x27;, &#x27;underOver_quote_diffInitialCurrO&#x27;, &#x27;chance1x2_quote_initial2&#x27;, &#x27;chance1x2_quote_realx&#x27;, &#x27;goalNoGoal_flashback_noGoal&#x27;, &#x27;underOver_chance_over15&#x27;, &#x27;goalNoGoal_bookkeeping_status&#x27;, &#x27;chance1x2_quote_current1&#x27;, &#x27;underOver_chance_under45&#x27;, &#x27;chance1x2_quote_initialx&#x27;, &#x27;goalNoGoal_bookkeeping_gg&#x27;, &#x27;underOver_chance_over45&#x27;, &#x27;chance1x2_comparison_flashback&#x27;, &#x27;chance1x2_flashback_p2&#x27;, &#x27;chance1x2_bookkeeping_px&#x27;, &#x27;goalNoGoal_multigoal_m13Away&#x27;, &#x27;chance1x2_chance_p2x&#x27;, &#x27;chance1x2_quote_currentx&#x27;, &#x27;chance1x2_bookkeeping_actual&#x27;, &#x27;underOver_flashback_over25&#x27;, &#x27;goalNoGoal_quote_currentNG&#x27;, &#x27;chance1x2_quote_diffRealCurrx&#x27;, &#x27;underOver_chance_under052HT&#x27;, &#x27;underOver_bookkeeping_o&#x27;, &#x27;underOver_chance_under35&#x27;, &#x27;goalNoGoal_bookkeeping_avg&#x27;, &#x27;chance1x2_quote_current2&#x27;, &#x27;goalNoGoal_flashback_goal&#x27;, &#x27;underOver_flashback_over05HT&#x27;, &#x27;underOver_flashback_under05HT&#x27;, &#x27;evaluation_valMetrica&#x27;, &#x27;underOver_flashback_over15&#x27;, &#x27;chance1x2_quote_real1&#x27;, &#x27;goalNoGoal_quote_initialNG&#x27;, &#x27;underOver_bookkeeping_actual&#x27;, &#x27;goalNoGoal_quote_initialGG&#x27;, &#x27;chance1x2_chance_p12&#x27;, &#x27;underOver_quote_currentU&#x27;, &#x27;underOver_flashback_under25&#x27;, &#x27;evaluation_val1x2&#x27;, &#x27;goalNoGoal_stats_avgGoalAway&#x27;, &#x27;goalNoGoal_flashback_m35&#x27;, &#x27;goalNoGoal_flashback_m24&#x27;, &#x27;underOver_quote_initialU&#x27;, &#x27;goalNoGoal_quote_diffRealCurrNG&#x27;, &#x27;goalNoGoal_multigoal_m24&#x27;, &#x27;underOver_bookkeeping_avg&#x27;, &#x27;goalNoGoal_chance_odd&#x27;, &#x27;chance1x2_flashback_p1&#x27;, &#x27;goalNoGoal_flashback_m13&#x27;, &#x27;underOver_flashback_over35&#x27;, &#x27;goalNoGoal_multigoal_m13Home&#x27;, &#x27;chance1x2_bookkeeping_p2&#x27;, &#x27;underOver_quote_diffRealCurrO&#x27;, &#x27;underOver_chance_under25&#x27;, &#x27;goalNoGoal_quote_diffInitialCurrNG&#x27;, &#x27;goalNoGoal_comparison_flashback&#x27;, &#x27;underOver_quote_initialO&#x27;, &#x27;chance1x2_chance_pHt2&#x27;, &#x27;goalNoGoal_quote_currentGG&#x27;, &#x27;chance1x2_bookkeeping_avg&#x27;, &#x27;chance1x2_quote_diffInitialCurr2&#x27;, &#x27;goalNoGoal_bookkeeping_ng&#x27;, &#x27;underOver_flashback_under15&#x27;]</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-20" type="checkbox" ><label for="sk-estimator-id-20" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>&lt;lambda&gt;</div><div class="caption">FunctionTransformer</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.FunctionTransformer.html">?<span>Documentation for FunctionTransformer</span></a></div></label><div class="sk-toggleable__content fitted"><pre>FunctionTransformer(func=&lt;function &lt;lambda&gt; at 0x12a266040&gt;)</pre></div> </div></div><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-21" type="checkbox" ><label for="sk-estimator-id-21" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>imputers: ColumnTransformer</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.compose.ColumnTransformer.html">?<span>Documentation for imputers: ColumnTransformer</span></a></div></label><div class="sk-toggleable__content fitted"><pre>ColumnTransformer(transformers=[(&#x27;impute_mean&#x27;, SimpleImputer(),
+                                 [&#x27;chance1x2_bookkeeping_actual&#x27;,
+                                  &#x27;chance1x2_bookkeeping_avg&#x27;,
+                                  &#x27;chance1x2_bookkeeping_p1&#x27;,
+                                  &#x27;chance1x2_bookkeeping_p2&#x27;,
+                                  &#x27;chance1x2_bookkeeping_px&#x27;,
+                                  &#x27;chance1x2_bookkeeping_status&#x27;,
+                                  &#x27;chance1x2_chance_p1&#x27;, &#x27;chance1x2_chance_p12&#x27;,
+                                  &#x27;chance1x2_chance_p1x&#x27;, &#x27;chance1x2_chance_p2&#x27;,
+                                  &#x27;chance1x2_chance_p2Ht12&#x27;...
+                                  &#x27;chance1x2_chance_px&#x27;,
+                                  &#x27;chance1x2_comparison_affini&#x27;,
+                                  &#x27;chance1x2_comparison_flashback&#x27;,
+                                  &#x27;chance1x2_flashback_p1&#x27;,
+                                  &#x27;chance1x2_flashback_p2&#x27;,
+                                  &#x27;chance1x2_flashback_pHt1&#x27;,
+                                  &#x27;chance1x2_flashback_pHt2&#x27;,
+                                  &#x27;chance1x2_flashback_pHtx&#x27;,
+                                  &#x27;chance1x2_flashback_px&#x27;,
+                                  &#x27;chance1x2_quote_current1&#x27;,
+                                  &#x27;chance1x2_quote_current2&#x27;,
+                                  &#x27;chance1x2_quote_currentx&#x27;,
+                                  &#x27;chance1x2_quote_diffInitialCurr1&#x27;, ...])])</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-22" type="checkbox" ><label for="sk-estimator-id-22" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>impute_mean</div></div></label><div class="sk-toggleable__content fitted"><pre>[&#x27;chance1x2_bookkeeping_actual&#x27;, &#x27;chance1x2_bookkeeping_avg&#x27;, &#x27;chance1x2_bookkeeping_p1&#x27;, &#x27;chance1x2_bookkeeping_p2&#x27;, &#x27;chance1x2_bookkeeping_px&#x27;, &#x27;chance1x2_bookkeeping_status&#x27;, &#x27;chance1x2_chance_p1&#x27;, &#x27;chance1x2_chance_p12&#x27;, &#x27;chance1x2_chance_p1x&#x27;, &#x27;chance1x2_chance_p2&#x27;, &#x27;chance1x2_chance_p2Ht12&#x27;, &#x27;chance1x2_chance_p2Ht1x&#x27;, &#x27;chance1x2_chance_p2Ht2x&#x27;, &#x27;chance1x2_chance_p2x&#x27;, &#x27;chance1x2_chance_pHt1&#x27;, &#x27;chance1x2_chance_pHt2&#x27;, &#x27;chance1x2_chance_pHtx&#x27;, &#x27;chance1x2_chance_px&#x27;, &#x27;chance1x2_comparison_affini&#x27;, &#x27;chance1x2_comparison_flashback&#x27;, &#x27;chance1x2_flashback_p1&#x27;, &#x27;chance1x2_flashback_p2&#x27;, &#x27;chance1x2_flashback_pHt1&#x27;, &#x27;chance1x2_flashback_pHt2&#x27;, &#x27;chance1x2_flashback_pHtx&#x27;, &#x27;chance1x2_flashback_px&#x27;, &#x27;chance1x2_quote_current1&#x27;, &#x27;chance1x2_quote_current2&#x27;, &#x27;chance1x2_quote_currentx&#x27;, &#x27;chance1x2_quote_diffInitialCurr1&#x27;, &#x27;chance1x2_quote_diffInitialCurr2&#x27;, &#x27;chance1x2_quote_diffInitialCurrx&#x27;, &#x27;chance1x2_quote_diffRealCurr1&#x27;, &#x27;chance1x2_quote_diffRealCurr2&#x27;, &#x27;chance1x2_quote_diffRealCurrx&#x27;, &#x27;chance1x2_quote_initial1&#x27;, &#x27;chance1x2_quote_initial2&#x27;, &#x27;chance1x2_quote_initialx&#x27;, &#x27;chance1x2_quote_real1&#x27;, &#x27;chance1x2_quote_real2&#x27;, &#x27;chance1x2_quote_realx&#x27;, &#x27;evaluation_val1x2&#x27;, &#x27;evaluation_valMetrica&#x27;, &#x27;evaluation_valScala&#x27;, &#x27;evaluation_valUnderOver&#x27;, &#x27;goalNoGoal_bookkeeping_actual&#x27;, &#x27;goalNoGoal_bookkeeping_avg&#x27;, &#x27;goalNoGoal_bookkeeping_gg&#x27;, &#x27;goalNoGoal_bookkeeping_ng&#x27;, &#x27;goalNoGoal_bookkeeping_status&#x27;, &#x27;goalNoGoal_chance_even&#x27;, &#x27;goalNoGoal_chance_goal&#x27;, &#x27;goalNoGoal_chance_goalAway&#x27;, &#x27;goalNoGoal_chance_goalHome&#x27;, &#x27;goalNoGoal_chance_noGoal&#x27;, &#x27;goalNoGoal_chance_odd&#x27;, &#x27;goalNoGoal_comparison_affini&#x27;, &#x27;goalNoGoal_comparison_flashback&#x27;, &#x27;goalNoGoal_flashback_goal&#x27;, &#x27;goalNoGoal_flashback_m13&#x27;, &#x27;goalNoGoal_flashback_m24&#x27;, &#x27;goalNoGoal_flashback_m35&#x27;, &#x27;goalNoGoal_flashback_noGoal&#x27;, &#x27;goalNoGoal_multigoal_m13&#x27;, &#x27;goalNoGoal_multigoal_m13Away&#x27;, &#x27;goalNoGoal_multigoal_m13Home&#x27;, &#x27;goalNoGoal_multigoal_m14&#x27;, &#x27;goalNoGoal_multigoal_m24&#x27;, &#x27;goalNoGoal_multigoal_m24Away&#x27;, &#x27;goalNoGoal_multigoal_m24Home&#x27;, &#x27;goalNoGoal_multigoal_m35&#x27;, &#x27;goalNoGoal_quote_currentGG&#x27;, &#x27;goalNoGoal_quote_currentNG&#x27;, &#x27;goalNoGoal_quote_diffInitialCurrGG&#x27;, &#x27;goalNoGoal_quote_diffInitialCurrNG&#x27;, &#x27;goalNoGoal_quote_diffRealCurrGG&#x27;, &#x27;goalNoGoal_quote_diffRealCurrNG&#x27;, &#x27;goalNoGoal_quote_initialGG&#x27;, &#x27;goalNoGoal_quote_initialNG&#x27;, &#x27;goalNoGoal_quote_realGG&#x27;, &#x27;goalNoGoal_quote_realNG&#x27;, &#x27;goalNoGoal_stats_avgGoalAway&#x27;, &#x27;goalNoGoal_stats_avgGoalHome&#x27;, &#x27;goalNoGoal_stats_avgGoalTakenAway&#x27;, &#x27;goalNoGoal_stats_avgGoalTakenHome&#x27;, &#x27;underOver_bookkeeping_actual&#x27;, &#x27;underOver_bookkeeping_avg&#x27;, &#x27;underOver_bookkeeping_o&#x27;, &#x27;underOver_bookkeeping_status&#x27;, &#x27;underOver_bookkeeping_u&#x27;, &#x27;underOver_chance_over052HT&#x27;, &#x27;underOver_chance_over05HT&#x27;, &#x27;underOver_chance_over15&#x27;, &#x27;underOver_chance_over15HT&#x27;, &#x27;underOver_chance_over25&#x27;, &#x27;underOver_chance_over35&#x27;, &#x27;underOver_chance_over45&#x27;, &#x27;underOver_chance_under052HT&#x27;, &#x27;underOver_chance_under05HT&#x27;, &#x27;underOver_chance_under15&#x27;, &#x27;underOver_chance_under15HT&#x27;, &#x27;underOver_chance_under25&#x27;, &#x27;underOver_chance_under35&#x27;, &#x27;underOver_chance_under45&#x27;, &#x27;underOver_comparison_affini&#x27;, &#x27;underOver_comparison_flashback&#x27;, &#x27;underOver_flashback_over05HT&#x27;, &#x27;underOver_flashback_over15&#x27;, &#x27;underOver_flashback_over25&#x27;, &#x27;underOver_flashback_over35&#x27;, &#x27;underOver_flashback_under05HT&#x27;, &#x27;underOver_flashback_under15&#x27;, &#x27;underOver_flashback_under25&#x27;, &#x27;underOver_flashback_under35&#x27;, &#x27;underOver_quote_currentO&#x27;, &#x27;underOver_quote_currentU&#x27;, &#x27;underOver_quote_diffInitialCurrO&#x27;, &#x27;underOver_quote_diffInitialCurrU&#x27;, &#x27;underOver_quote_diffRealCurrO&#x27;, &#x27;underOver_quote_diffRealCurrU&#x27;, &#x27;underOver_quote_initialO&#x27;, &#x27;underOver_quote_initialU&#x27;, &#x27;underOver_quote_realO&#x27;, &#x27;underOver_quote_realU&#x27;]</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-23" type="checkbox" ><label for="sk-estimator-id-23" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>SimpleImputer</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.impute.SimpleImputer.html">?<span>Documentation for SimpleImputer</span></a></div></label><div class="sk-toggleable__content fitted"><pre>SimpleImputer()</pre></div> </div></div></div></div></div></div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-24" type="checkbox" ><label for="sk-estimator-id-24" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>StandardScaler</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a></div></label><div class="sk-toggleable__content fitted"><pre>StandardScaler()</pre></div> </div></div></div></div></div></div></div><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-25" type="checkbox" ><label for="sk-estimator-id-25" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>remainder</div></div></label><div class="sk-toggleable__content fitted"><pre>[]</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-26" type="checkbox" ><label for="sk-estimator-id-26" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>passthrough</div></div></label><div class="sk-toggleable__content fitted"><pre>passthrough</pre></div> </div></div></div></div></div></div></div><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-27" type="checkbox" ><label for="sk-estimator-id-27" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>LogisticRegression</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.linear_model.LogisticRegression.html">?<span>Documentation for LogisticRegression</span></a></div></label><div class="sk-toggleable__content fitted"><pre>LogisticRegression(C=0.008107306487633793, penalty=&#x27;l1&#x27;, random_state=495629405,
+                   solver=&#x27;saga&#x27;)</pre></div> </div></div></div></div></div></div>
+  </body>
+</html>
+    
