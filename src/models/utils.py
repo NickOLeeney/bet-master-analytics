@@ -35,13 +35,10 @@ def get_match_table():
     return df_cast
 
 
-def get_table(quer):
+def get_table(query):
     statement = w.statement_execution.execute_statement(
         warehouse_id=os.getenv("DATABRICKS_WAREHOUSE_ID"),
-        statement="""
-            SELECT *
-            FROM bet_master_analytics.strategies.win_1x_table
-        """,
+        statement=query,
         wait_timeout="30s"
     )
 
