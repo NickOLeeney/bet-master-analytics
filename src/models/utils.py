@@ -50,8 +50,8 @@ def get_table(query):
 
     # Create pandas DataFrame
     df = pd.DataFrame(rows, columns=columns)
-
     df_cast = _cast_df(df)
+    df_cast.columns = [x.replace(".", "_") for x in df_cast.columns]
     return df_cast
 
 
@@ -125,7 +125,7 @@ def _cast_df(df):
             df[col] = pd.to_numeric(df[col], errors="coerce").astype("Int64")
 
 
-    boolean_cols = ["win_1x"]
+    boolean_cols = ["win_1x", "win_1"]
     for col in boolean_cols:
         if col in df.columns:
             df[col] = (df[col] == "true")
