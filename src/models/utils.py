@@ -1,4 +1,5 @@
 import os
+import mlflow
 import pandas as pd
 from dotenv import load_dotenv
 from databricks.sdk import WorkspaceClient
@@ -131,3 +132,9 @@ def _cast_df(df):
             df[col] = (df[col] == "true")
 
     return df
+
+def set_mlflow_experiment(experiment_name: str) -> None:
+    mlflow.set_tracking_uri("databricks")
+    mlflow.set_registry_uri("databricks-uc")
+    mlflow.set_experiment(f"/Users/maicolnicolini96@gmail.com/bet_analytics_experiments/{experiment_name}")
+    return None
