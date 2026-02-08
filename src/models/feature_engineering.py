@@ -62,27 +62,27 @@ def infer_column_types(df: pd.DataFrame, target_col: str):
     return num_cols, bool_cols, datetime_cols, cat_cols
 
 
-def bool_to_int(X: pd.DataFrame):
-    Xc = X.copy()
-    for col in Xc.columns:
-        Xc[col] = Xc[col].astype("int8")
-    return Xc
+def bool_to_int(x: pd.DataFrame):
+    xc = x.copy()
+    for col in xc.columns:
+        xc[col] = xc[col].astype("int8")
+    return xc
 
 
-def datetime_to_int64(X: pd.DataFrame):
+def datetime_to_int64(x: pd.DataFrame):
     """
     Converte datetime -> int64 (nanosecondi dal 1970). Evita feature engineering extra.
     """
-    Xc = X.copy()
-    for col in Xc.columns:
+    xc = x.copy()
+    for col in xc.columns:
         # pandas datetime64[ns]
-        Xc[col] = pd.to_datetime(Xc[col], errors="coerce").astype("int64")
-    return Xc
+        xc[col] = pd.to_datetime(xc[col], errors="coerce").astype("int64")
+    return xc
 
 
 def get_feature_names_from_preprocessor(preprocessor: ColumnTransformer):
     """
-    Estrae i nomi feature dopo ColumnTransformer (incluse one-hot).
+    Estrae i nomi feature dopo ColumnTransformer (include one-hot).
     """
     output_features = []
     for name, trans, cols in preprocessor.transformers_:
@@ -106,3 +106,5 @@ def get_feature_names_from_preprocessor(preprocessor: ColumnTransformer):
                 # fallback: usa i nomi originali
                 output_features.extend(list(cols))
     return output_features
+
+
