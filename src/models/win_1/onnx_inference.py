@@ -51,8 +51,8 @@ def get_onnx_prediction(sess: InferenceSession, preprocessor: ColumnTransformer,
 
 
 def main():
-    onnx_export_path = "artifacts/model.onnx"
-    preprocessor_export_path = "artifacts/preprocessor.joblib"
+    onnx_export_path = "../artifacts/model.onnx"
+    preprocessor_export_path = "../artifacts/preprocessor.joblib"
 
     # 1. Carica il modello ONNX
     sess = ort.InferenceSession(onnx_export_path)
