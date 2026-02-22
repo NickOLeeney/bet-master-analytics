@@ -126,7 +126,7 @@ def _cast_df(df):
             df[col] = pd.to_numeric(df[col], errors="coerce").astype("Int64")
 
 
-    boolean_cols = ["win_1x", "win_1"]
+    boolean_cols = ["win_1x", "win_1", "multigoal_24"]
     for col in boolean_cols:
         if col in df.columns:
             df[col] = (df[col] == "true")
