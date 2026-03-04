@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 
+
 def time_based_split(df: pd.DataFrame, time_col: str, train_frac=0.7, val_frac=0.15):
     """
     Split per tempo: train (più vecchio), val (intermedio), test (più recente).
@@ -108,3 +109,25 @@ def get_feature_names_from_preprocessor(preprocessor: ColumnTransformer):
     return output_features
 
 
+def get_chance_1x2_comparison_affini_clusters(df: pd.DataFrame) -> pd.DataFrame:
+    df['chance1x2_comparison_affini_3rd_cluster'] = df['chance1x2_comparison_affini'] <= 200
+    df['chance1x2_comparison_affini_2nd_cluster'] = (
+        df['chance1x2_comparison_affini'] > 200) & (df['chance1x2_comparison_affini'] <= 500)
+    df['chance1x2_comparison_affini_1st_cluster'] = df['chance1x2_comparison_affini'] > 500
+    return df
+
+
+def get_under_over_comparison_affini_clusters(df: pd.DataFrame) -> pd.DataFrame:
+    df['underOver_comparison_affini_3rd_cluster'] = df['underOver_comparison_affini'] <= 2000
+    df['underOver_comparison_affini_2nd_cluster'] = (
+        df['underOver_comparison_affini'] > 2000) & (df['underOver_comparison_affini'] <= 5000)
+    df['underOver_comparison_affini_1st_cluster'] = df['underOver_comparison_affini'] > 5000
+    return df
+
+
+def get_goal_no_goal_comparison_affini_clusters(df: pd.DataFrame) -> pd.DataFrame:
+    df['goalNoGoal_comparison_affini_3rd_cluster'] = df['goalNoGoal_comparison_affini'] <= 2000
+    df['goalNoGoal_comparison_affini_2nd_cluster'] = (
+        df['goalNoGoal_comparison_affini'] > 2000) & (df['goalNoGoal_comparison_affini'] <= 4500)
+    df['goalNoGoal_comparison_affini_1st_cluster'] = df['goalNoGoal_comparison_affini'] > 4500
+    return df

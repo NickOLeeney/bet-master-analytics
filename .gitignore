@@ -210,3 +210,5 @@ __marimo__/
 
 src/models/artifacts/*
 src/models/.DS_Store
+data/*
+!data/.gitkeep
