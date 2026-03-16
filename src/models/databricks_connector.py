@@ -127,7 +127,7 @@ def _cast_df(df):
 
 
     boolean_cols = ["win_1x", "win_1", "multigoal_24", "goal_ht", "goal_home_ht", "btts", "multigoal_12_home",
-                    "multigoal_13_away", "multigoal_13_home", "win_1x", "btts_and_over_25"]
+                    "multigoal_13_away", "multigoal_13_home", "win_1x", "over_15"]
 
     for col in boolean_cols:
         if col in df.columns:
