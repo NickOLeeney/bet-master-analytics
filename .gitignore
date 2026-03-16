@@ -212,3 +212,5 @@ src/models/artifacts/*
 src/models/.DS_Store
 data/*
 !data/.gitkeep
+src/strategies/bot_messages.csv
+src/strategies/get_telegram_messages.py
