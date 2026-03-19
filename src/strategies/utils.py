@@ -1,8 +1,9 @@
 import re
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.stats import t
 from datetime import datetime
-
 
 
 def _get_data():
@@ -12,13 +13,11 @@ def _get_data():
     return df_text
 
 
-
 def _extract_matches(text: str, previous_date: str | None) -> list[dict]:
     if not text:
         return []
 
     text = str(text)
-
     date_match = re.search(r"Today's Matches \((\d{2}-\d{2}-\d{4})\)", text)
     match_date = date_match.group(1) if date_match else previous_date
 
@@ -82,9 +81,7 @@ def _extract_matches(text: str, previous_date: str | None) -> list[dict]:
                 "result": True if icon == "✅" else False,
                 "return": float(ret),
             })
-
     return rows
-
 
 
 def _normalize_strategies(strategy):
@@ -95,8 +92,10 @@ def _normalize_strategies(strategy):
     return strategy
 
 
-
-def get_match_df():
+def get_match_df(filter_league: bool = False):
+    """
+    filter_league (bool): Filter out no more used leagues
+    """
     df_text = _get_data()
     tot_matches = list()
     previous_date = None
@@ -108,6 +107,7 @@ def get_match_df():
         tot_matches += item
 
     df_final = pd.DataFrame(tot_matches)
+
     df_final = df_final.set_index("match_id", drop=True)
     df_final["date"] = [datetime.strptime(x, "%d-%m-%Y") for x in df_final["date"]]
     df_final["week"] = df_final["date"].dt.to_period("W")
@@ -116,17 +116,21 @@ def get_match_df():
 
     monday_start = df_final["date"].min() - pd.to_timedelta(df_final["date"].min().weekday(), unit="D")
     df_final["week"] = ((df_final["date"] - monday_start).dt.days // 7) + 1
+
+    if filter_league:
+        # Filter out no more used leagues
+        last_week = max(df_final["week"])
+        available_leagues = df_final[df_final["week"] == last_week]["league"].unique()
+        df_final = df_final[df_final["league"].isin(available_leagues)]
+
     df_final["strategy"] = [_normalize_strategies(x) for x in df_final["strategy"]]
     return df_final
 
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.stats import t
 
 def analyze_strategies(
     df: pd.DataFrame,
-    strategies,
+    strategies=None,
+    leagues=None,
     ci: float = 0.95,
     print_pi: bool = False
 ):
@@ -150,11 +154,15 @@ def analyze_strategies(
     if isinstance(strategies, str):
         strategies = [strategies]
 
-    if not strategies:
-        raise ValueError("La lista 'strategies' è vuota")
+    if strategies:
+        # filtro strategie
+        df_strategy = df[df["strategy"].isin(strategies)].copy()
+    else:
+        df_strategy = df.copy()
 
-    # filtro strategie
-    df_strategy = df[df["strategy"].isin(strategies)].copy()
+    if leagues:
+        df_strategy = df_strategy[df_strategy["league"].isin(leagues)]
+
 
     if df_strategy.empty:
         raise ValueError(f"Nessun dato trovato per strategies={strategies}")
@@ -190,10 +198,20 @@ def analyze_strategies(
         pi_high = mean + t_crit * pred_se
 
     # etichetta leggibile
-    strategy_label = strategies[0] if len(strategies) == 1 else " + ".join(strategies)
+    if strategies:
+        strategy_label = strategies[0] if len(strategies) == 1 else " + ".join(strategies)
+    else:
+        strategy_label = "Any strategy"
+    
+    if leagues:
+        league_label = leagues[0] if len(leagues) == 1 else " + ".join(leagues)
+    else:
+        league_label = "Any league"
 
     # plotting
     fig, ax = plt.subplots(figsize=(12, 6))
+    # ymin, ymax = ax.get_ylim()
+    # ax.set_yticks(np.arange(ymin, ymax + 2.5, 2.5))
 
     x = df_aggregate.index
     y = df_aggregate.values
@@ -203,7 +221,7 @@ def analyze_strategies(
         marker="o",
         linewidth=2,
         markersize=6,
-        label=f"{strategy_label} weekly aggregated return"
+        label=f"Weekly return"
     )
 
     # area sopra/sotto zero
@@ -214,7 +232,7 @@ def analyze_strategies(
     ax.axhline(0, linestyle="--", linewidth=1)
     ax.axhline(
         mean, linestyle="-", linewidth=2,
-        label=f"Mean = {mean:.3f}"
+        label=f"Weekly Mean = {mean:.3f}"
     )
 
     if n >= 2:
@@ -245,7 +263,7 @@ def analyze_strategies(
                 label=f"{int(ci*100)}% PI next week"
             )
 
-    ax.set_title(f"Weekly aggregated return - strategies: {strategy_label}", fontsize=14, pad=12)
+    ax.set_title(f"Weekly return: {strategy_label}", fontsize=10, pad=12)
     ax.set_xlabel("Week")
     ax.set_ylabel("Aggregated return")
     ax.grid(True, alpha=0.3)
@@ -253,8 +271,15 @@ def analyze_strategies(
     plt.tight_layout()
     plt.show()
 
+    if not strategies:
+        strategies = ["Any"]
+    
+    if not leagues:
+        leagues = ["Any"]
+
     stats = {
         "strategy": strategies if len(strategies) > 1 else strategies[0],
+        "leagues": leagues if len(leagues) > 1 else leagues[0],
         "n_weeks": n,
         "mean_weekly_agg_return": mean,
         "std_weekly_agg_return": std,
@@ -266,4 +291,116 @@ def analyze_strategies(
     }
 
     return df_aggregate, stats
+
+
+def get_best_leagues(df, strategies: list[str] = None):
+    # filtro strategie
+
+    if strategies:
+        df_strategies = df[df["strategy"].isin(strategies)].copy()
+    else:
+        df_strategies = df.copy()
+
+    # aggregazione per campionato
+    league_stats = (
+        df_strategies
+        .groupby("league")
+        .agg(
+            total_return=("return", "sum"),
+            n_matches=("return", "size"),
+            avg_return=("return", "mean")
+        )
+        .sort_values("total_return", ascending=False)
+    )
+
+    # top campionati positivi
+    top_leagues = (
+        league_stats[league_stats["total_return"] > 0]
+        .sort_values("total_return", ascending=True)
+    )
+
+    # worst campionati negativi
+    worst_leagues = (
+        league_stats[league_stats["total_return"] < 0]
+        .sort_values("total_return", ascending=True)
+    )
+
+    _, axes = plt.subplots(1, 2, figsize=(18, 8))
+
+    # Top leagues
+    axes[0].barh(top_leagues.index, top_leagues["total_return"])
+    axes[0].axvline(0, linestyle="--", linewidth=1)
+    axes[0].set_title(f"Top {len(top_leagues)} campionati per return totale")
+    axes[0].set_xlabel("Return totale")
+    axes[0].set_ylabel("League")
+
+    for i, (league, row) in enumerate(top_leagues.iterrows()):
+        axes[0].text(
+            row["total_return"],
+            i,
+            f"  n={int(row['n_matches'])} | avg={row['avg_return']:.2f}",
+            va="center"
+        )
+
+    # Worst leagues
+    axes[1].barh(worst_leagues.index, worst_leagues["total_return"])
+    axes[1].axvline(0, linestyle="--", linewidth=1)
+    axes[1].set_title(f"Worst {len(worst_leagues)} campionati per return totale")
+    axes[1].set_xlabel("Return totale")
+    axes[1].set_ylabel("League")
+
+    for i, (_, row) in enumerate(worst_leagues.iterrows()):
+        axes[1].text(
+            row["total_return"],
+            i,
+            f"  n={int(row['n_matches'])} | avg={row['avg_return']:.2f}",
+            va="center"
+        )
+
+    plt.tight_layout()
+    plt.show()
+    return top_leagues.sort_values(by="total_return", ascending=False)
+
+
+def get_best_strategies(df, leagues: list[str] = None, n_weeks: int = None):
+    """
+    n_weeks (int): no. of rolling weeks to evaluate
+    leagues (list): leagues to consider. If None any league is considered
+    """
+    pd.set_option('display.float_format', '{:.2f}'.format)
+
+    last_week = max(df["week"])
+    df = df.sort_values(by="date", ascending=False)
+
+    if not n_weeks:
+        n_weeks = last_week
+
+    week_df = df[df["week"] > last_week - n_weeks]
+
+    if leagues:
+        week_df = week_df[week_df["league"].isin(leagues)]
+    strategy_dict = dict()
+
+    # Removing week 7 considering it an outlier
+    # week_df = week_df[week_df["week"] != 7]
+    available_strategies = week_df[week_df["week"] == last_week]["strategy"].unique()
+
+    for strategy in available_strategies:
+        gain = week_df[week_df['strategy'] == strategy].groupby("week")["return"].sum().mean()
+        std = week_df[week_df['strategy'] == strategy].groupby("week")["return"].sum().std()
+        counts = week_df[week_df['strategy'] == strategy].groupby("week").size().to_list()
+
+        while len(counts) < n_weeks:
+            counts += [0]
+        
+        mean_counts = np.mean(counts)
+        
+        total_counts = (np.sum(counts))
+        accuracy = week_df[week_df['strategy'] == strategy].groupby("week")["result"].mean().mean()
+        strategy_dict = strategy_dict | {strategy: [gain, std, mean_counts, total_counts, accuracy]}
+
+    strategy_df = pd.DataFrame(strategy_dict, index=["weekly_mean_return", "weekly_std_return", "weekly_counts", "total_counts", "accuracy"]).T.sort_values(by='weekly_mean_return', ascending=False)
+    strategy_df["total_counts"] = strategy_df["total_counts"].astype(int)
+    strategy_df = strategy_df.dropna()
+    return strategy_df 
 
