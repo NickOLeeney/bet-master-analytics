@@ -8,8 +8,8 @@ from datetime import datetime
 
 def _get_data():
     df = pd.read_csv("bot_messages.csv")
-    recap_mask = ["🏁 • 🆚" in x and "@" not in x and "🤖" not in x for x in df["text"]]
-    df_text = df[recap_mask]['text'][:: - 1]
+    recap_mask = ["🏁 • 🆚" in x and "@" not in x and "🤖" not in x for x in df["message"].fillna("")]
+    df_text = df[recap_mask]['message'][:: - 1]
     return df_text
 
 
@@ -37,6 +37,7 @@ def _extract_matches(text: str, previous_date: str | None) -> list[dict]:
         time_match = re.search(r"🕒\s*Time:\s*(.*?)\n", block)
         league_match = re.search(r"🏆\s*League:\s*(.*?)\n", block)
         match_id_match = re.search(r"🆔\s*Match ID:\s*(\S+)", block)
+        goal_match = re.search(r'G\((\d+)-(\d+)\)', block)
 
         strategies_match = re.search(
             r"[🧩🧠]\s*Strategies:\s*\n(.*?)(?=\n\s*🆔\s*Match ID:|\Z)",
@@ -50,6 +51,13 @@ def _extract_matches(text: str, previous_date: str | None) -> list[dict]:
 
         home_team = teams_match.group(1).strip()
         away_team = teams_match.group(2).strip()
+        try:
+            goal_home = goal_match.group(1)
+            goal_away = goal_match.group(2)
+        except:
+            goal_home = None
+            goal_away = None
+
         time = time_match.group(1).strip()
         league = league_match.group(1).strip()
         match_id = match_id_match.group(1).strip()
@@ -77,6 +85,8 @@ def _extract_matches(text: str, previous_date: str | None) -> list[dict]:
                 "league": league,
                 "home_team": home_team,
                 "away_team": away_team,
+                "goal_home": goal_home,
+                "goal_away": goal_away,
                 "strategy": strategy.strip(),
                 "result": True if icon == "✅" else False,
                 "return": float(ret),
@@ -111,6 +121,14 @@ def get_match_df(filter_league: bool = False):
     df_final = df_final.set_index("match_id", drop=True)
     df_final["date"] = [datetime.strptime(x, "%d-%m-%Y") for x in df_final["date"]]
     df_final["week"] = df_final["date"].dt.to_period("W")
+    df_final["goal_home"] = df_final["goal_home"].astype(int, errors="ignore")
+    df_final["goal_away"] = df_final["goal_away"].astype(int, errors="ignore")
+    
+    # Dropping DNB 1 and DNB 2 tied games
+    other_strategies_mask = [not x for x in df_final['strategy'].isin(["DNB 1", "DNB 2"])]
+    dnb_mask = (df_final['strategy'].isin(["DNB 1", "DNB 2"]) & (df_final['goal_home'] != df_final['goal_away']))
+    df_final = df_final[other_strategies_mask | dnb_mask]
+
 
     df_final = df_final.sort_values("date") 
 
@@ -404,3 +422,72 @@ def get_best_strategies(df, leagues: list[str] = None, n_weeks: int = None):
     strategy_df = strategy_df.dropna()
     return strategy_df 
 
+
+
+async def main(output_csv):
+    client = TelegramClient(session_name, api_id, api_hash)
+    await client.start()  # al primo avvio chiede numero, codice e forse password 2FA
+
+    entity = await client.get_entity(group_input)
+
+    with open(output_csv, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "id",
+            "date",
+            "sender_id",
+            "sender_name",
+            "message",
+            "reply_to_msg_id",
+            "views",
+            "forwards"
+        ])
+
+        # reverse=True => dal più vecchio al più recente
+        async for msg in client.iter_messages(entity, reverse=True):
+            sender = await msg.get_sender() if msg.sender_id else None
+
+            sender_name = ""
+            if sender:
+                if getattr(sender, "username", None):
+                    sender_name = sender.username
+                else:
+                    first = getattr(sender, "first_name", "") or ""
+                    last = getattr(sender, "last_name", "") or ""
+                    sender_name = (first + " " + last).strip()
+
+            writer.writerow([
+                msg.id,
+                msg.date.isoformat() if msg.date else "",
+                msg.sender_id,
+                sender_name,
+                msg.message or "",
+                msg.reply_to_msg_id,
+                getattr(msg, "views", None),
+                getattr(msg, "forwards", None),
+            ])
+
+    await client.disconnect()
+    print(f"Esportazione completata: {output_csv}")
+
+if __name__ == "__main__":
+    import asyncio
+    import csv
+    from telethon import TelegramClient
+
+    # Inserisci qui le tue credenziali
+    api_id = 29726995
+    api_hash = "d7b8f07290d475df82300e97bf9e898d"
+
+    # Nome file sessione locale (Telethon salverà qui la sessione)
+    session_name = "telegram_session"
+
+    # Username/link/titolo del gruppo
+    # Esempi:
+    # group_input = "https://t.me/nomegruppo"
+    # group_input = "nomegruppo"
+    # group_input = "Nome Gruppo"
+    group_input = "Bet Master Group"
+
+    output_csv = "bot_messages.csv"
+    asyncio.run(main(output_csv))
