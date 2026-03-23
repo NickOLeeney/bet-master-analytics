@@ -119,7 +119,9 @@ def get_match_df(filter_league: bool = False):
     df_final = pd.DataFrame(tot_matches)
 
     df_final = df_final.set_index("match_id", drop=True)
-    df_final["date"] = [datetime.strptime(x, "%d-%m-%Y") for x in df_final["date"]]
+    df_final["date"] = [datetime.strptime(x, "%d-%m-%Y") if x else None for x in df_final["date"]]
+    df_final["date"] = df_final["date"].fillna(max(df_final["date"].dropna()))
+
     df_final["week"] = df_final["date"].dt.to_period("W")
     df_final["goal_home"] = df_final["goal_home"].astype(int, errors="ignore")
     df_final["goal_away"] = df_final["goal_away"].astype(int, errors="ignore")
@@ -295,10 +297,12 @@ def analyze_strategies(
     if not leagues:
         leagues = ["Any"]
 
+    expected_bets = int(df_strategy.groupby("week", as_index=True)["return"].count().median())
     stats = {
         "strategy": strategies if len(strategies) > 1 else strategies[0],
         "leagues": leagues if len(leagues) > 1 else leagues[0],
         "n_weeks": n,
+        "expected_bets_per_week": expected_bets,
         "mean_weekly_agg_return": mean,
         "std_weekly_agg_return": std,
         "sem": sem,
@@ -422,6 +426,170 @@ def get_best_strategies(df, leagues: list[str] = None, n_weeks: int = None):
     strategy_df = strategy_df.dropna()
     return strategy_df 
 
+
+def compare_strategies(
+    df: pd.DataFrame,
+    strategies: dict[str, dict],
+    show_ci: bool = True,
+    show_pi: bool = False,
+    figsize: tuple = (14, 7),
+):
+    required_cols = {"week", "strategy", "league", "return"}
+    missing = required_cols - set(df.columns)
+    if missing:
+        raise ValueError(f"Mancano nel dataframe le colonne richieste: {missing}")
+
+    if not strategies:
+        raise ValueError("'strategies' è vuoto.")
+
+    fig, ax = plt.subplots(figsize=figsize)
+
+    aggregated_data = {}
+    summary_rows = []
+
+    for label, strat_cfg in strategies.items():
+        strat_list = strat_cfg.get("strategy", None)
+        league_list = strat_cfg.get("leagues", None)
+
+        if isinstance(strat_list, str):
+            strat_list = [strat_list]
+        if isinstance(league_list, str):
+            league_list = [league_list]
+
+        df_tmp = df.copy()
+
+        if strat_list:
+            df_tmp = df_tmp[df_tmp["strategy"].isin(strat_list)]
+
+        if league_list:
+            df_tmp = df_tmp[df_tmp["league"].isin(league_list)]
+
+        if df_tmp.empty:
+            print(f"[WARN] Nessun dato trovato per '{label}'")
+            continue
+
+        df_agg = (
+            df_tmp.groupby("week", as_index=True)["return"]
+            .sum()
+            .sort_index()
+        )
+
+        if df_agg.empty:
+            print(f"[WARN] Aggregazione vuota per '{label}'")
+            continue
+
+        x = df_agg.index
+        y = df_agg.values
+
+        line, = ax.plot(
+            x,
+            y,
+            marker="o",
+            linewidth=2,
+            markersize=5,
+            label=f"{label} - weekly return"
+        )
+
+        color = line.get_color()
+
+        ax.fill_between(
+            x, y, 0,
+            where=(y >= 0),
+            alpha=0.08,
+            interpolate=True,
+            color=color
+        )
+        ax.fill_between(
+            x, y, 0,
+            where=(y < 0),
+            alpha=0.08,
+            interpolate=True,
+            color=color
+        )
+
+        mean = strat_cfg.get("mean_weekly_agg_return", np.nan)
+        ci_low = strat_cfg.get("ci_low", np.nan)
+        ci_high = strat_cfg.get("ci_high", np.nan)
+        pi_low = strat_cfg.get("pi_low", np.nan)
+        pi_high = strat_cfg.get("pi_high", np.nan)
+
+        if pd.notna(mean):
+            ax.axhline(
+                mean,
+                linestyle="-",
+                linewidth=1.5,
+                alpha=0.85,
+                color=color,
+                label=f"{label} mean = {mean:.3f}"
+            )
+
+        if show_ci and pd.notna(ci_low) and pd.notna(ci_high):
+            ax.fill_between(
+                x,
+                ci_low,
+                ci_high,
+                color=color,
+                alpha=0.10,
+                label=f"{label} CI [{ci_low:.3f}, {ci_high:.3f}]"
+            )
+
+        if show_pi and pd.notna(pi_low) and pd.notna(pi_high):
+            ax.axhline(
+                pi_low,
+                linestyle=":",
+                linewidth=1.2,
+                alpha=0.8,
+                color=color,
+                label=f"{label} PI low = {pi_low:.3f}"
+            )
+            ax.axhline(
+                pi_high,
+                linestyle=":",
+                linewidth=1.2,
+                alpha=0.8,
+                color=color,
+                label=f"{label} PI high = {pi_high:.3f}"
+            )
+            ax.fill_between(
+                x,
+                pi_low,
+                pi_high,
+                color=color,
+                alpha=0.05,
+                label=f"{label} PI"
+            )
+
+        aggregated_data[label] = df_agg
+
+        summary_rows.append({
+            "label": label,
+            "strategy": strat_list,
+            "leagues": league_list,
+            "n_weeks": strat_cfg.get("n_weeks", len(df_agg)),
+            "expected_bets_per_week": strat_cfg.get("expected_bets_per_week", np.nan),
+            "mean_weekly_agg_return": mean,
+            "std_weekly_agg_return": strat_cfg.get("std_weekly_agg_return", np.nan),
+            "sem": strat_cfg.get("sem", np.nan),
+            "ci_low": ci_low,
+            "ci_high": ci_high,
+            "pi_low": pi_low,
+            "pi_high": pi_high,
+        })
+
+    if not aggregated_data:
+        raise ValueError("Nessuna strategia valida da plottare.")
+
+    ax.axhline(0, linestyle="--", linewidth=1, color="black", alpha=0.7)
+    ax.set_title("Weekly return comparison across strategies", fontsize=11, pad=12)
+    ax.set_xlabel("Week")
+    ax.set_ylabel("Aggregated return")
+    ax.grid(True, alpha=0.3)
+    ax.legend(frameon=True, fontsize=9)
+    plt.tight_layout()
+    plt.show()
+
+    summary_df = pd.DataFrame(summary_rows)
+    return aggregated_data, summary_df
 
 
 async def main(output_csv):
