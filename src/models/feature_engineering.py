@@ -131,3 +131,17 @@ def get_goal_no_goal_comparison_affini_clusters(df: pd.DataFrame) -> pd.DataFram
         df['goalNoGoal_comparison_affini'] > 2000) & (df['goalNoGoal_comparison_affini'] <= 4500)
     df['goalNoGoal_comparison_affini_1st_cluster'] = df['goalNoGoal_comparison_affini'] > 4500
     return df
+
+
+def time_based_train_test_split(df: pd.DataFrame, time_col: str, train_frac=0.7):
+    """
+    Split per tempo: train (più vecchio), test (più recente).
+    """
+    df_sorted = df.sort_values(time_col).reset_index(drop=True)
+    n = len(df_sorted)
+
+    n_train = int(n * train_frac)
+
+    train_df = df_sorted.iloc[:n_train]
+    test_df = df_sorted.iloc[n_train:]
+    return train_df, test_df
