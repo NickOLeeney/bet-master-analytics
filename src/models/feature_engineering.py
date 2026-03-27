@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
@@ -145,3 +146,40 @@ def time_based_train_test_split(df: pd.DataFrame, time_col: str, train_frac=0.7)
     train_df = df_sorted.iloc[:n_train]
     test_df = df_sorted.iloc[n_train:]
     return train_df, test_df
+
+
+def round_to_step(x, step):
+    """
+    Arrotonda x a un multiplo di 'step'.
+    """
+    try:
+        if step <= 0:
+            raise ValueError("step deve essere > 0")
+        ratio = x / step
+
+        return round(ratio) * step
+    
+    except Exception as e: 
+        return None
+
+
+def get_return(strategy: str, odds: str):
+    if strategy:
+        gain = odds - 1
+    else:
+        gain = -1
+    return gain
+
+
+def get_mask(df, params_dict):
+    mask = pd.Series(True, index=df.index)
+    for feat, value in params_dict.items():
+        col_name = "_".join(feat.replace("_idx", "").split("_")[:-1])
+
+        if "min" in feat:
+            mask &= (df[col_name] >= value)
+        elif "max" in feat:
+            mask &= (df[col_name] <= value)
+        else:
+            raise Exception
+    return mask
