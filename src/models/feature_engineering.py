@@ -153,11 +153,13 @@ def round_to_step(x, step):
     Arrotonda x a un multiplo di 'step'.
     """
     try:
-        if step <= 0:
+        if not step:
+            return str(x)
+        elif step <= 0:
             raise ValueError("step deve essere > 0")
-        ratio = x / step
-
-        return round(ratio) * step
+        else:
+            ratio = x / step
+            return round(ratio) * step
     
     except Exception as e: 
         return None
@@ -171,49 +173,39 @@ def get_return(strategy: str, odds: str):
     return gain
 
 
-import pandas as pd
-
 def get_mask(df, params_dict):
     mask = pd.Series(True, index=df.index)
 
-    # ricavo i nomi delle feature presenti nei parametri
     features = set()
-
     for key in params_dict:
-        if key.endswith("_include_missing"):
-            features.add(key[:-16])
-        elif key.endswith("_min_idx"):
-            features.add(key[:-8])
-        elif key.endswith("_max_idx"):
-            features.add(key[:-8])
-        elif key.endswith("_min"):
-            features.add(key[:-4])
-        elif key.endswith("_max"):
-            features.add(key[:-4])
+        for suffix in [
+            "_include_missing", "_use_min", "_use_max",
+            "_min_idx", "_max_idx", "_min", "_max"
+        ]:
+            if key.endswith(suffix):
+                features.add(key[:-len(suffix)])
+                break
 
     for feat in features:
-        if feat not in df.columns:
-            raise KeyError(f"Colonna '{feat}' non presente nel dataframe")
-
         s = df[feat]
+
         include_missing = params_dict.get(f"{feat}_include_missing", False)
+        use_min = params_dict.get(f"{feat}_use_min", True)
+        use_max = params_dict.get(f"{feat}_use_max", True)
 
-        # range min/max
-        if f"{feat}_min" in params_dict and f"{feat}_max" in params_dict:
-            feat_min = params_dict[f"{feat}_min"]
-            feat_max = params_dict[f"{feat}_max"]
+        feat_mask = pd.Series(True, index=df.index)
 
-            feat_mask = s.between(feat_min, feat_max)
+        if f"{feat}_min" in params_dict and use_min:
+            feat_mask &= s >= params_dict[f"{feat}_min"]
 
-        # range min_idx/max_idx
-        elif f"{feat}_min_idx" in params_dict and f"{feat}_max_idx" in params_dict:
-            feat_min = params_dict[f"{feat}_min_idx"]
-            feat_max = params_dict[f"{feat}_max_idx"]
+        if f"{feat}_max" in params_dict and use_max:
+            feat_mask &= s <= params_dict[f"{feat}_max"]
 
-            feat_mask = s.between(feat_min, feat_max)
+        if f"{feat}_min_idx" in params_dict and use_min:
+            feat_mask &= s >= params_dict[f"{feat}_min_idx"]
 
-        else:
-            continue
+        if f"{feat}_max_idx" in params_dict and use_max:
+            feat_mask &= s <= params_dict[f"{feat}_max_idx"]
 
         if include_missing:
             feat_mask = feat_mask | s.isna()
