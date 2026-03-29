@@ -416,12 +416,13 @@ def get_best_strategies(df, leagues: list[str] = None, n_weeks: int = None):
             counts += [0]
         
         mean_counts = np.mean(counts)
+        std_counts = np.std(counts)
         
         total_counts = (np.sum(counts))
         accuracy = week_df[week_df['strategy'] == strategy].groupby("week")["result"].mean().mean()
-        strategy_dict = strategy_dict | {strategy: [gain, std, mean_counts, total_counts, accuracy]}
+        strategy_dict = strategy_dict | {strategy: [gain, std, mean_counts, std_counts, total_counts, accuracy]}
 
-    strategy_df = pd.DataFrame(strategy_dict, index=["weekly_mean_return", "weekly_std_return", "weekly_counts", "total_counts", "accuracy"]).T.sort_values(by='weekly_mean_return', ascending=False)
+    strategy_df = pd.DataFrame(strategy_dict, index=["weekly_mean_return", "weekly_std_return", "weekly_counts", "weekly_std_counts", "total_counts", "accuracy"]).T.sort_values(by='weekly_mean_return', ascending=False)
     strategy_df["total_counts"] = strategy_df["total_counts"].astype(int)
     strategy_df = strategy_df.dropna()
     return strategy_df 
