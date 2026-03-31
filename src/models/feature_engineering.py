@@ -174,15 +174,13 @@ def get_return(strategy: str, odds: str):
 
 
 def get_mask(df, params_dict):
+    rules_str = str()
     mask = pd.Series(True, index=df.index)
 
     features = set()
     for key in params_dict:
-        for suffix in [
-            "_include_missing", "_use_min", "_use_max",
-            "_min_idx", "_max_idx", "_min", "_max"
-        ]:
-            if key.endswith(suffix):
+        for suffix in ["_cat", "_use_min", "_use_max", "_min", "_max", "_include_missing"]: # ,   "_min_idx", "_max_idx", 
+             if key.endswith(suffix):
                 features.add(key[:-len(suffix)])
                 break
 
@@ -195,17 +193,16 @@ def get_mask(df, params_dict):
 
         feat_mask = pd.Series(True, index=df.index)
 
+        # Categorical filtering
+        if f"{feat}_cat" in params_dict:
+            feat_mask &= s.isin(params_dict[f"{feat}_cat"])
+
+        # Numerical filtering
         if f"{feat}_min" in params_dict and use_min:
             feat_mask &= s >= params_dict[f"{feat}_min"]
 
         if f"{feat}_max" in params_dict and use_max:
             feat_mask &= s <= params_dict[f"{feat}_max"]
-
-        if f"{feat}_min_idx" in params_dict and use_min:
-            feat_mask &= s >= params_dict[f"{feat}_min_idx"]
-
-        if f"{feat}_max_idx" in params_dict and use_max:
-            feat_mask &= s <= params_dict[f"{feat}_max_idx"]
 
         if include_missing:
             feat_mask = feat_mask | s.isna()

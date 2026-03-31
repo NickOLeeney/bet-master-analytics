@@ -37,21 +37,20 @@ def get_match_data():
     for col in float_cols:
         df_flat[col] = pd.to_numeric(df_flat[col], errors="coerce")
  
-
     # INTEGER
     integer_cols = ["chance1x2.bookkeeping.status", "chance1x2.comparison.affini", "chance1x2.comparison.flashback", "evaluation.val1x2", "evaluation.valUnderOver", "evaluation.valMetrica", "evaluation.valScala", "goalNoGoal.bookkeeping.status", "goalNoGoal.comparison.affini", "goalNoGoal.comparison.flashback", "underOver.bookkeeping.status", "underOver.comparison.affini", "underOver.comparison.flashback", "team.goal.home", "team.goal.away", "team.goalHt.home", "team.goalHt.away", "team.corner.home", "team.corner.away"]
     for col in integer_cols:
         df_flat[col] = pd.to_numeric(df_flat[col], errors="coerce").astype("Int64")
     
-    df_flat = df_flat.sort_values(by='time', ascending=True)
+    df_final = df_flat.sort_values(by='time', ascending=True).copy()
 
     # inizio settimana (lunedì) del timestamp minimo
-    monday_start = df_flat['time'].min().normalize() - pd.to_timedelta(df_flat['time'].min().weekday(), unit="D")
+    monday_start = df_final['time'].min().normalize() - pd.to_timedelta(df_final['time'].min().weekday(), unit="D")
 
     # week index: 1, 2, 3, ...
-    df_flat['weeks'] = ((df_flat['time'] - monday_start).dt.days // 7) + 1
+    df_final['weeks'] = ((df_final['time'] - monday_start).dt.days // 7) + 1
 
-    return df_flat
+    return df_final
 
 
 def get_win_1_table():
@@ -179,7 +178,8 @@ def get_goal_ht_table():
 def get_btts_table():
     df = get_match_data()
 
-    df = df.dropna(subset=["team.goal.home", "team.goal.away"])
+    df = df.dropna(subset=["team.goal.home", "team.goal.away"]).copy()
+   
     df["btts"] = (df["team.goal.home"] > 0) & (df["team.goal.away"] > 0)
     to_drop = ["_id", "matchId", "team.goal.home", "team.goal.away", "team.goalHt.home", "team.goalHt.away", "team.corner.home", "team.corner.away"]
     df_strategy = df.drop(columns=to_drop)
