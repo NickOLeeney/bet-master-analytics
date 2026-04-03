@@ -44,14 +44,6 @@ def get_match_data():
     
     df_final = df_flat.sort_values(by='time', ascending=True).copy()
 
-    # Adding week column 
-    df_final["time"].dt.to_period("W")
-
-    # inizio settimana (lunedì) del timestamp minimo
-    monday_start = df_final['time'].min().normalize() - pd.to_timedelta(df_final['time'].min().weekday(), unit="D")
-
-    # week index: 1, 2, 3, ...
-    df_final['week'] = ((df_final['time'] - monday_start).dt.days // 7) + 1
     return df_final
 
 

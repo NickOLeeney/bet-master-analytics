@@ -1,6 +1,7 @@
+import json
+import optuna
 import numpy as np
 import pandas as pd
-
 from onnxruntime import InferenceSession
 from sklearn.compose import ColumnTransformer
 
@@ -61,3 +62,36 @@ def check_overfitting(best_pred_perc, best_prec, best_roi, test_roi, test_prec, 
             f"WARNING: Pred perc fuori dai limiti di overfitting! Val: {best_pred_perc:.4f}, Test: {test_pred_perc:.4f}, Limiti: [{pred_perc_floor:.4f}, {pred_perc_ceil:.4f}]")
 
     return None
+
+
+def trial_key(t: optuna.trial.FrozenTrial) -> str:
+    # chiave semplice per evitare di aggiungere due volte lo stesso best trial
+    return json.dumps(
+        {
+            "params": t.params,
+            "value": t.value,
+        },
+        sort_keys=True,
+        default=str,
+    )
+
+
+def run_one_study(seed, objective, objective_hyperparameters, feature_bins_map, df_binned):
+    sampler = optuna.samplers.TPESampler(
+        seed=seed,
+        multivariate=False,
+        group=False,
+        n_startup_trials=objective_hyperparameters["tpe_sampler"]["n_startup_trials"], 
+        n_ei_candidates=objective_hyperparameters["tpe_sampler"]["n_ei_candidates"], 
+    )
+    study = optuna.create_study(direction="maximize", sampler=sampler,) # gc is garbage collector, when set to True it prevents running otu of memory
+    study.optimize(
+        lambda trial: objective(
+            trial=trial, 
+            min_obs=objective_hyperparameters["min_obs"], 
+            _lambda=objective_hyperparameters["lambda"], 
+            feature_bins_map=feature_bins_map,
+            df_binned=df_binned),
+        n_trials=objective_hyperparameters["n_trials"]
+        )
+    return study

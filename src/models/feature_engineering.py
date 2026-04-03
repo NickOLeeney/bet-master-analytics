@@ -1,5 +1,6 @@
-import numpy as np
+import optuna
 import pandas as pd
+from itertools import combinations
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 
@@ -212,3 +213,154 @@ def get_mask(df, params_dict):
         mask &= feat_mask
 
     return mask
+
+
+def add_week_column(df):
+    df["week"] = df["time"].dt.to_period("W")
+    monday_start = df["time"].min() - pd.to_timedelta(df["time"].min().weekday(), unit="D")
+    week_series = ((df["time"] - monday_start).dt.days // 7) + 1
+    return week_series
+
+
+def objective(trial, min_obs:int, _lambda: float, feature_bins_map: dict, df_binned: pd.DataFrame):
+    mask = pd.Series(True, index=df_binned.index)
+    params_dict_item = dict()
+
+    for feat, step in feature_bins_map.items():
+
+        s = df_binned[feat]
+        non_null = s.dropna()
+
+        if non_null.empty:
+            continue
+
+        # ---------------------------------
+        # CASO 1: variabile categorica
+        # ---------------------------------
+        if not step:
+            # ordine stabile e deterministico
+            unique_vals = sorted(map(str, non_null.unique()))
+
+            categorical_set = [
+                list(c)
+                for r in range(1, len(unique_vals) + 1)
+                for c in combinations(unique_vals, r)
+            ]
+
+            idx = trial.suggest_categorical(
+                f"{feat}_cat_idx",
+                list(range(len(categorical_set)))
+            )
+
+            categorical_feat = categorical_set[idx]
+            # trial.set_user_attr(f"{feat}_cat", categorical_feat)
+            params_dict_item[f"{feat}_cat"] = categorical_feat
+
+
+        # ---------------------------------
+        # CASO 2: numerica continua/intera
+        # ---------------------------------
+        else:
+            # TODO: se la feature ha valori nulli, introduco include_missing feature, valutare rimozione  
+            if s.isna().sum() > 0:
+                include_missing = trial.suggest_categorical(
+                    f"{feat}_include_missing",
+                    [True, False]
+                )
+                # trial.set_user_attr(f"{feat}_include_missing", include_missing)
+                params_dict_item[f"{feat}_include_missing"] = include_missing
+
+            # TODO: vincolo per >=, <=, <,>, da studiare
+            use_min = trial.suggest_categorical(f"{feat}_use_min", [True, False])
+            use_max = trial.suggest_categorical(f"{feat}_use_max", [True, False])
+
+            # trial.set_user_attr(f"{feat}_use_min", use_min)
+            # trial.set_user_attr(f"{feat}_use_max", use_max)
+            params_dict_item[f"{feat}_use_min"] = use_min
+            params_dict_item[f"{feat}_use_max"] = use_max
+            
+
+            # TODO: questo dovrebbe forzare l'utilizzo della feature, da capire se forzarlo è utile o meno
+            # # almeno un vincolo deve essere attivo
+            if not use_min and not use_max:
+                raise optuna.TrialPruned()
+            
+            if pd.api.types.is_integer_dtype(s):
+                feat_min = trial.suggest_int(
+                    name=f"{feat}_min",
+                    low=int(non_null.min()),
+                    high=int(non_null.max()) - step, # considero upper bound meno step
+                    step=step
+                )
+                feat_max = trial.suggest_int(
+                    name=f"{feat}_max",
+                    low=int(non_null.min()), # feat_min + step, # considero lower bound più step
+                    high=int(non_null.max()), 
+                    step=step
+                )
+                # trial.set_user_attr(f"{feat}_min", feat_min)
+                # trial.set_user_attr(f"{feat}_max", feat_max)
+                if feat_min >= feat_max:
+                    raise optuna.TrialPruned()
+                params_dict_item[f"{feat}_min"] = feat_min
+                params_dict_item[f"{feat}_max"] = feat_max
+            else:
+                feat_min = trial.suggest_float(
+                    name=f"{feat}_min",
+                    low=float(non_null.min()),
+                    high=float(non_null.max()) - step, # considero upper bound meno step
+                    step=step
+                )
+                feat_max = trial.suggest_float(
+                    name=f"{feat}_max",
+                    low=float(non_null.min()), # feat_min + step, # considero lower bound più step
+                    high=float(non_null.max()),
+                    step=step
+                )
+                # trial.set_user_attr(f"{feat}_min", feat_min)
+                # trial.set_user_attr(f"{feat}_max", feat_max)
+                if feat_min >= feat_max:
+                    raise optuna.TrialPruned()
+                params_dict_item[f"{feat}_min"] = feat_min
+                params_dict_item[f"{feat}_max"] = feat_max
+
+        trial.set_user_attr("params_dict", params_dict_item)
+
+        # costruzione maschera feature
+        feat_mask = pd.Series(True, index=s.index)
+
+        if not step:
+            # Categorical filtering
+            feat_mask &= s.isin(categorical_feat)
+        else:
+            # Numerical filtering
+            if use_min:
+                feat_mask &= s >= feat_min
+
+            if use_max:
+                feat_mask &= s <= feat_max
+
+            # Filtering for feature with nan
+            if s.isna().sum() > 0:
+                if include_missing:
+                    feat_mask = feat_mask | s.isna()
+                else:
+                    feat_mask = feat_mask & s.notna()
+
+        mask &= feat_mask
+
+    selected = df_binned.loc[mask]
+
+    if len(selected) <= 0:
+        return -1e9
+    
+    mean_weekly_return = selected.groupby("week")["return"].sum().mean() # massimizzo ritorno settimanale
+    std_weekly_return = selected.groupby("week")["return"].sum().std(ddof=0) # minimizzo volatilità ritorno settimanale
+
+
+    if len(selected) < min_obs:
+        return -1e9
+    
+    score = mean_weekly_return - _lambda * std_weekly_return 
+
+    return float(score)
