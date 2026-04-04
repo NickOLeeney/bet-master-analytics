@@ -1,0 +1,88 @@
+{
+  "over_15": {
+    "feature_bins_map": {
+      "underOver_chance_over15": 5,
+      "underOver_comparison_affini": 1000,
+      "underOver_comparison_flashback": 200,
+      "underOver_flashback_over15": 4,
+      "evaluation_valUnderOver": null
+    },
+    "params_dict": {
+      "underOver_chance_over15_use_min": true,
+      "underOver_chance_over15_use_max": true,
+      "underOver_chance_over15_min": 60,
+      "underOver_chance_over15_max": 90,
+      "underOver_comparison_affini_use_min": false,
+      "underOver_comparison_affini_use_max": true,
+      "underOver_comparison_affini_min": 3000,
+      "underOver_comparison_affini_max": 16000,
+      "underOver_comparison_flashback_use_min": false,
+      "underOver_comparison_flashback_use_max": true,
+      "underOver_comparison_flashback_min": 6000,
+      "underOver_comparison_flashback_max": 15000,
+      "underOver_flashback_over15_include_missing": false,
+      "underOver_flashback_over15_use_min": true,
+      "underOver_flashback_over15_use_max": false,
+      "underOver_flashback_over15_min": 76,
+      "underOver_flashback_over15_max": 92,
+      "evaluation_valUnderOver_cat": [
+        "560002",
+        "776652",
+        "777613",
+        "931281"
+      ]
+    }
+  },
+  "dnb_1": {
+    "feature_bins_map": {
+      "chance1x2_chance_p1": 5,
+      "chance1x2_bookkeeping_status": null,
+      "chance1x2_comparison_affini": 250,
+      "chance1x2_comparison_flashback": 250,
+      "chance1x2_flashback_p1": 5,
+      "evaluation_val1x2": null,
+      "evaluation_valMetrica": null,
+      "evaluation_valScala": null
+    },
+    "params_dict": {
+      "chance1x2_chance_p1_use_min": false,
+      "chance1x2_chance_p1_use_max": true,
+      "chance1x2_chance_p1_min": 10,
+      "chance1x2_chance_p1_max": 60,
+      "chance1x2_bookkeeping_status_cat": [
+        "0",
+        "1"
+      ],
+      "chance1x2_comparison_affini_use_min": true,
+      "chance1x2_comparison_affini_use_max": false,
+      "chance1x2_comparison_affini_min": 500,
+      "chance1x2_comparison_affini_max": 1000,
+      "chance1x2_comparison_flashback_use_min": false,
+      "chance1x2_comparison_flashback_use_max": true,
+      "chance1x2_comparison_flashback_min": 9750,
+      "chance1x2_comparison_flashback_max": 18500,
+      "chance1x2_flashback_p1_include_missing": false,
+      "chance1x2_flashback_p1_use_min": true,
+      "chance1x2_flashback_p1_use_max": false,
+      "chance1x2_flashback_p1_min": 40,
+      "chance1x2_flashback_p1_max": 50,
+      "evaluation_val1x2_cat": [
+        "55579",
+        "917006",
+        "918177",
+        "961919"
+      ],
+      "evaluation_valMetrica_cat": [
+        "114521",
+        "147930",
+        "221599",
+        "354214",
+        "<NA>"
+      ],
+      "evaluation_valScala_cat": [
+        "49657",
+        "<NA>"
+      ]
+    }
+  }
+}

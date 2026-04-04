@@ -212,5 +212,7 @@ src/models/artifacts/*
 src/models/.DS_Store
 data/*
 !data/.gitkeep
+!data/output/optuna_model/aggregated_study.db
 src/strategies/bot_messages.csv
 src/strategies/get_telegram_messages.py
+telegram_session.session
