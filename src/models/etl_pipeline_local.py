@@ -108,7 +108,7 @@ def get_corner_home_table():
 def get_multigoal_24_table():
     df = get_match_data()
     df = df.dropna(subset=["team.goal.home", "team.goal.away"])
-    df["multigoal_24"] = (2<= df["team.goal.home"]) & (df["team.goal.away"] <=4)
+    df["multigoal_24"] = ((df["team.goal.home"] + df["team.goal.away"])>= 2) & ((df["team.goal.home"] + df["team.goal.away"]) <= 4)
 
     to_drop = ["_id", "matchId", "team.goal.home", "team.goal.away", "team.goalHt.home", "team.goalHt.away", "team.corner.home", "team.corner.away"]
     df_strategy = df.drop(columns=to_drop)
@@ -200,6 +200,18 @@ def get_over_15_table():
     df_strategy = df.drop(columns=to_drop)
     df_strategy = _cast_df(df_strategy)
     return df_strategy
+
+
+def get_over_25_table():
+    df = get_match_data()
+
+    df = df.dropna(subset=["team.goal.home", "team.goal.away"])
+    df["over_25"] = (df["team.goal.home"] + df["team.goal.away"] > 2.5)
+    to_drop = ["_id", "matchId", "team.goal.home", "team.goal.away", "team.goalHt.home", "team.goalHt.away", "team.corner.home", "team.corner.away"]
+    df_strategy = df.drop(columns=to_drop)
+    df_strategy = _cast_df(df_strategy)
+    return df_strategy
+
 
 
 def _cast_df(df):
