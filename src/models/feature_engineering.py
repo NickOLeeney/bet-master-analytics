@@ -175,10 +175,9 @@ def get_return(strategy: str, odds: str):
 
 
 def get_mask(df, params_dict):
-    rules_str = str()
     mask = pd.Series(True, index=df.index)
-
     features = set()
+
     for key in params_dict:
         for suffix in ["_cat", "_use_min", "_use_max", "_min", "_max", "_include_missing"]: # ,   "_min_idx", "_max_idx", 
              if key.endswith(suffix):
@@ -210,7 +209,8 @@ def get_mask(df, params_dict):
         else:
             feat_mask = feat_mask & s.notna()
 
-        mask &= feat_mask
+        if params_dict[f"use_{feat}"]:
+            mask &= feat_mask
 
     return mask
 
@@ -222,7 +222,7 @@ def add_week_column(df):
     return week_series
 
 
-def objective(trial, min_obs:int, _lambda: float, feature_bins_map: dict, df_binned: pd.DataFrame):
+def objective(trial, min_obs:int, _lambda: float, feature_bins_map: dict, df_binned: pd.DataFrame, suggest_feature: bool = True):
     mask = pd.Series(True, index=df_binned.index)
     params_dict_item = dict()
 
@@ -255,6 +255,10 @@ def objective(trial, min_obs:int, _lambda: float, feature_bins_map: dict, df_bin
             categorical_feat = categorical_set[idx]
             # trial.set_user_attr(f"{feat}_cat", categorical_feat)
             params_dict_item[f"{feat}_cat"] = categorical_feat
+            
+            if suggest_feature:
+                use_feat = trial.suggest_categorical(f"use_{feat}", [True, False])
+                params_dict_item[f"use_{feat}"] = use_feat
 
 
         # ---------------------------------
@@ -278,6 +282,10 @@ def objective(trial, min_obs:int, _lambda: float, feature_bins_map: dict, df_bin
             # trial.set_user_attr(f"{feat}_use_max", use_max)
             params_dict_item[f"{feat}_use_min"] = use_min
             params_dict_item[f"{feat}_use_max"] = use_max
+
+            if suggest_feature:
+                use_feat = trial.suggest_categorical(f"use_{feat}", [True, False])
+                params_dict_item[f"use_{feat}"] = use_feat
             
 
             # TODO: questo dovrebbe forzare l'utilizzo della feature, da capire se forzarlo è utile o meno
@@ -329,6 +337,7 @@ def objective(trial, min_obs:int, _lambda: float, feature_bins_map: dict, df_bin
         # costruzione maschera feature
         feat_mask = pd.Series(True, index=s.index)
 
+    
         if not step:
             # Categorical filtering
             feat_mask &= s.isin(categorical_feat)
@@ -347,7 +356,9 @@ def objective(trial, min_obs:int, _lambda: float, feature_bins_map: dict, df_bin
                 else:
                     feat_mask = feat_mask & s.notna()
 
-        mask &= feat_mask
+        if use_feat:
+            mask &= feat_mask
+
 
     selected = df_binned.loc[mask]
 
