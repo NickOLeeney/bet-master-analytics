@@ -1,9 +1,12 @@
 import optuna
+import random
 import pandas as pd
 from itertools import combinations
 from sklearn.pipeline import Pipeline
+from pandas.api.types import is_numeric_dtype
 from sklearn.compose import ColumnTransformer
 
+from utils import run_one_study
 
 def time_based_split(df: pd.DataFrame, time_col: str, train_frac=0.7, val_frac=0.15):
     """
@@ -375,3 +378,222 @@ def objective(trial, min_obs:int, _lambda: float, feature_bins_map: dict, df_bin
     score = mean_weekly_return - _lambda * std_weekly_return 
 
     return float(score)
+
+
+
+# ---
+
+from itertools import combinations
+
+def get_feature_bins_map(df, features):
+
+    feature_bins_map = dict()
+
+    for feat in features:
+        if is_numeric_dtype(df[feat]):
+            feature_bins_map[feat] = _get_step(df, feat)
+        else:
+            feature_bins_map[feat] = None
+    return feature_bins_map
+
+
+def _get_step(df, feature):
+    q1 = df[[feature]].describe().loc["25%"].values[0]
+    q3 = df[[feature]].describe().loc["75%"].values[0]
+
+    diff = q3 - q1
+    
+    if df[feature].nunique() <= 20:
+        return None
+
+    if 0 < diff <= 1:
+        step = 0.2
+
+    elif 1 < diff <= 5:
+        step = 1
+
+    elif 5 < diff <= 100:
+        step = 5
+    elif 100 < diff <= 500:
+        step = 100
+    elif diff >= 500:
+        step = 500
+    else: 
+        raise Exception
+    return step
+
+
+def _objective_features(trial, min_obs:int, _lambda: float, feature_bins_map: dict, df_binned: pd.DataFrame):
+    mask = pd.Series(True, index=df_binned.index)
+    params_dict_item = dict()
+
+    for feat, step in feature_bins_map.items():
+        s = df_binned[feat]
+        non_null = s.dropna()
+
+        if non_null.empty:
+            continue
+
+        # ---------------------------------
+        # CASO 1: variabile categorica
+        # ---------------------------------
+        if not step:
+            # ordine stabile e deterministico
+            unique_vals = sorted(map(str, non_null.unique()))
+
+            categorical_set = [
+                list(c)
+                for r in range(1, len(unique_vals) + 1)
+                for c in combinations(unique_vals, r)
+            ]
+
+            idx = trial.suggest_categorical(
+                f"{feat}_cat_idx",
+                list(range(len(categorical_set)))
+            )
+
+        
+            categorical_feat = categorical_set[idx]
+            params_dict_item[f"{feat}_cat"] = categorical_feat
+
+
+        # ---------------------------------
+        # CASO 2: numerica continua/intera
+        # ---------------------------------
+        else:
+            # TODO: se la feature ha valori nulli, introduco include_missing feature, valutare rimozione  
+            if s.isna().sum() > 0:
+                include_missing = trial.suggest_categorical(
+                    f"{feat}_include_missing",
+                    [True, False]
+                )
+                params_dict_item[f"{feat}_include_missing"] = include_missing
+
+            # TODO: vincolo per >=, <=, <,>, da studiare
+            use_min = trial.suggest_categorical(f"{feat}_use_min", [True, False])
+            use_max = trial.suggest_categorical(f"{feat}_use_max", [True, False])
+
+
+            params_dict_item[f"{feat}_use_min"] = use_min
+            params_dict_item[f"{feat}_use_max"] = use_max
+
+            
+            if pd.api.types.is_integer_dtype(s):
+                feat_min = trial.suggest_int(
+                    name=f"{feat}_min",
+                    low=int(non_null.min()),
+                    high=int(non_null.max()) - step, # considero upper bound meno step
+                    step=step
+                )
+                feat_max = trial.suggest_int(
+                    name=f"{feat}_max",
+                    low=int(non_null.min()), # feat_min + step, # considero lower bound più step
+                    high=int(non_null.max()), 
+                    step=step
+                )
+
+                if feat_min >= feat_max:
+                    raise optuna.TrialPruned()
+                
+                params_dict_item[f"{feat}_min"] = feat_min
+                params_dict_item[f"{feat}_max"] = feat_max
+            else:
+                feat_min = trial.suggest_float(
+                    name=f"{feat}_min",
+                    low=float(non_null.min()),
+                    high=float(non_null.max()) - step, # considero upper bound meno step
+                    step=step
+                )
+                feat_max = trial.suggest_float(
+                    name=f"{feat}_max",
+                    low=float(non_null.min()), # feat_min + step, # considero lower bound più step
+                    high=float(non_null.max()),
+                    step=step
+                )
+
+                if feat_min >= feat_max:
+                    raise optuna.TrialPruned()
+                
+                params_dict_item[f"{feat}_min"] = feat_min
+                params_dict_item[f"{feat}_max"] = feat_max
+
+        trial.set_user_attr("params_dict", params_dict_item)
+
+        # costruzione maschera feature
+        feat_mask = pd.Series(True, index=s.index)
+
+        if not step:
+            # Categorical filtering
+            feat_mask &= s.isin(categorical_feat)
+        else:
+            # Numerical filtering
+            if use_min:
+                feat_mask &= s >= feat_min
+
+            if use_max:
+                feat_mask &= s <= feat_max
+
+            # Filtering for feature with nan
+            if s.isna().sum() > 0:
+                if include_missing:
+                    feat_mask = feat_mask | s.isna()
+                else:
+                    feat_mask = feat_mask & s.notna()
+
+        mask &= feat_mask
+
+    selected = df_binned.loc[mask]
+    
+    mean_weekly_return = selected.groupby("week")["return"].sum().mean() # massimizzo ritorno settimanale
+    std_weekly_return = selected.groupby("week")["return"].sum().std(ddof=0) # minimizzo volatilità ritorno settimanale
+
+
+    if len(selected) < min_obs:
+        return -1e9
+    
+    score = mean_weekly_return - _lambda * std_weekly_return 
+
+    return float(score)
+
+def get_best_features(df, features, objective_hyperparameters):
+
+    feature_rank = dict()
+    feature_bins_map = get_feature_bins_map(df, features)
+
+    for key, value in feature_bins_map.items():
+        feature_bins_map_item = {key: value}
+        
+        # Create the binned dataframe
+        df_train_binned = df.copy()
+
+        for feat, step in feature_bins_map_item.items():
+            df_train_binned[feat] = [round_to_step(x, step) for x in df_train_binned[feat]]
+
+            if isinstance(step, int):
+                df_train_binned[feat] = df_train_binned[feat].astype("Int64")
+
+        # Generate random seeds
+        seeds = [random.randint(0, 2**32 - 1) for _ in range(objective_hyperparameters["n_studies"])]
+        studies = [
+            run_one_study(
+                seed=s, 
+                objective_hyperparameters=objective_hyperparameters, 
+                objective=_objective_features,
+                feature_bins_map=feature_bins_map_item, 
+                df_binned=df_train_binned
+                ) 
+                for s in seeds]
+
+        all_trials = []
+        for study in studies:
+            all_trials.extend(
+                [t for t in study.trials if t.value is not None and t.state.name == "COMPLETE"]
+            )
+        if all_trials:
+            best_trial = sorted(all_trials, key=lambda t: -t.value)[0]
+            feature_rank[feat] = best_trial.value
+    
+    sorted_feat = dict(sorted(feature_rank.items(), key=lambda item: item[1], reverse=True))
+    df_feat = pd.DataFrame(list(sorted_feat.items()), columns=['feature', 'score'])
+
+    return df_feat
