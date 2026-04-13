@@ -1,6 +1,7 @@
 import optuna
 import random
 import pandas as pd
+from tqdm import tqdm
 from itertools import combinations
 from sklearn.pipeline import Pipeline
 from pandas.api.types import is_numeric_dtype
@@ -560,7 +561,7 @@ def get_best_features(df, features, objective_hyperparameters):
     feature_rank = dict()
     feature_bins_map = get_feature_bins_map(df, features)
 
-    for key, value in feature_bins_map.items():
+    for key, value in tqdm(feature_bins_map.items()):
         feature_bins_map_item = {key: value}
         
         # Create the binned dataframe
