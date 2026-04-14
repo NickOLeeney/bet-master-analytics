@@ -2,6 +2,7 @@ import optuna
 import random
 import pandas as pd
 from tqdm import tqdm
+from pathlib import Path
 from itertools import combinations
 from sklearn.pipeline import Pipeline
 from pandas.api.types import is_numeric_dtype
@@ -556,7 +557,12 @@ def _objective_features(trial, min_obs:int, _lambda: float, feature_bins_map: di
 
     return float(score)
 
-def get_best_features(df, features, objective_hyperparameters):
+def get_best_features(df=None, features=None, objective_hyperparameters=None):
+
+    path = Path("./feature_rank.csv")
+    if path.exists():
+        df_feat = pd.read_csv("./feature_rank.csv", index_col=0)
+        return df_feat
 
     feature_rank = dict()
     feature_bins_map = get_feature_bins_map(df, features)
@@ -596,5 +602,7 @@ def get_best_features(df, features, objective_hyperparameters):
     
     sorted_feat = dict(sorted(feature_rank.items(), key=lambda item: item[1], reverse=True))
     df_feat = pd.DataFrame(list(sorted_feat.items()), columns=['feature', 'score'])
+
+    df_feat.to_csv("./feature_rank.csv")
 
     return df_feat
