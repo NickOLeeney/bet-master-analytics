@@ -148,5 +148,69 @@
       "underOver_quote_initialU_min": 2.0,
       "underOver_quote_initialU_max": 3.6000000000000005
     }
+  },
+  "over_25": {
+    "feature_bins_map": {
+      "goalNoGoal_stats_avgGoalTakenAway": 0.2,
+      "goalNoGoal_multigoal_m24Away": 5,
+      "goalNoGoal_quote_realNG": 0.2
+    },
+    "params_dict": {
+      "goalNoGoal_stats_avgGoalTakenAway_use_min": true,
+      "goalNoGoal_stats_avgGoalTakenAway_use_max": true,
+      "use_goalNoGoal_stats_avgGoalTakenAway": true,
+      "goalNoGoal_stats_avgGoalTakenAway_min": 3.0,
+      "goalNoGoal_stats_avgGoalTakenAway_max": 3.2,
+      "goalNoGoal_multigoal_m24Away_use_min": true,
+      "goalNoGoal_multigoal_m24Away_use_max": true,
+      "use_goalNoGoal_multigoal_m24Away": false,
+      "goalNoGoal_multigoal_m24Away_min": 20,
+      "goalNoGoal_multigoal_m24Away_max": 45,
+      "goalNoGoal_quote_realNG_use_min": false,
+      "goalNoGoal_quote_realNG_use_max": true,
+      "use_goalNoGoal_quote_realNG": true,
+      "goalNoGoal_quote_realNG_min": 1.6,
+      "goalNoGoal_quote_realNG_max": 4.0
+    }
+  },
+  "goal_home_ht": {
+    "feature_bins_map": {
+      "chance1x2_flashback_pHt1": 5,
+      "chance1x2_quote_diffInitialCurr2": 5,
+      "chance1x2_flashback_p1": 5,
+      "chance1x2_flashback_p2": 5,
+      "chance1x2_quote_current2": 1
+    },
+    "params_dict": {
+      "chance1x2_flashback_pHt1_include_missing": false,
+      "chance1x2_flashback_pHt1_use_min": true,
+      "chance1x2_flashback_pHt1_use_max": true,
+      "use_chance1x2_flashback_pHt1": true,
+      "chance1x2_flashback_pHt1_min": 50,
+      "chance1x2_flashback_pHt1_max": 70,
+      "chance1x2_quote_diffInitialCurr2_include_missing": false,
+      "chance1x2_quote_diffInitialCurr2_use_min": false,
+      "chance1x2_quote_diffInitialCurr2_use_max": true,
+      "use_chance1x2_quote_diffInitialCurr2": true,
+      "chance1x2_quote_diffInitialCurr2_min": -10,
+      "chance1x2_quote_diffInitialCurr2_max": 0,
+      "chance1x2_flashback_p1_include_missing": false,
+      "chance1x2_flashback_p1_use_min": true,
+      "chance1x2_flashback_p1_use_max": false,
+      "use_chance1x2_flashback_p1": false,
+      "chance1x2_flashback_p1_min": 70,
+      "chance1x2_flashback_p1_max": 80,
+      "chance1x2_flashback_p2_include_missing": true,
+      "chance1x2_flashback_p2_use_min": true,
+      "chance1x2_flashback_p2_use_max": false,
+      "use_chance1x2_flashback_p2": false,
+      "chance1x2_flashback_p2_min": 15,
+      "chance1x2_flashback_p2_max": 80,
+      "chance1x2_quote_current2_use_min": false,
+      "chance1x2_quote_current2_use_max": true,
+      "use_chance1x2_quote_current2": true,
+      "chance1x2_quote_current2_min": 5,
+      "chance1x2_quote_current2_max": 18
+    }
   }
 }
