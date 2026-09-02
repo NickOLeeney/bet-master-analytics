@@ -658,5 +658,5 @@ if __name__ == "__main__":
     # group_input = "Nome Gruppo"
     group_input = "Bet Master Group"
 
-    output_csv = "bot_messages.csv"
+    output_csv = "src/strategies/bot_messages.csv"
     asyncio.run(main(output_csv))

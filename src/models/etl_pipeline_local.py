@@ -181,6 +181,18 @@ def get_btts_table():
     return df_strategy
 
 
+def get_ntts_table():
+    df = get_match_data()
+
+    df = df.dropna(subset=["team.goal.home", "team.goal.away"]).copy()
+   
+    df["ntts"] = (df["team.goal.home"] == 0) | (df["team.goal.away"] == 0)
+    to_drop = ["_id", "matchId", "team.goal.home", "team.goal.away", "team.goalHt.home", "team.goalHt.away", "team.corner.home", "team.corner.away"]
+    df_strategy = df.drop(columns=to_drop)
+    df_strategy = _cast_df(df_strategy)
+    return df_strategy
+
+
 def get_win_x2_ht_table():
     df = get_match_data()
     df = df.dropna(subset=["team.goal.home", "team.goal.away"])
@@ -221,6 +233,15 @@ def get_under_25_table():
     df_strategy = _cast_df(df_strategy)
     return df_strategy
 
+
+def get_x_table():
+    df = get_match_data()
+    df = df.dropna(subset=["team.goal.home", "team.goal.away"])
+    df["tie"] = df["team.goal.home"] == df["team.goal.away"]
+    to_drop = ["_id", "matchId", "team.goal.home", "team.goal.away", "team.goalHt.home", "team.goalHt.away", "team.corner.home", "team.corner.away"]
+    df_strategy = df.drop(columns=to_drop)
+    df_strategy = _cast_df(df_strategy)
+    return df_strategy
 
 def _cast_df(df):
     df.columns = [x.replace(".", "_") for x in df.columns]

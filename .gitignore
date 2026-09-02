@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*__pycache__/
 *.py[codz]
 *$py.class
 
@@ -216,3 +216,4 @@ data/*
 src/strategies/bot_messages.csv
 src/strategies/get_telegram_messages.py
 telegram_session.session
+telegram_session.session-journal
