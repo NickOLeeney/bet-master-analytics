@@ -6,145 +6,145 @@ from scipy.stats import t
 from datetime import datetime
 
 
-def _get_data():
-    df = pd.read_csv("bot_messages.csv")
-    recap_mask = ["🏁 • 🆚" in x and "@" not in x and "🤖" not in x for x in df["message"].fillna("")]
-    df_text = df[recap_mask]['message'][:: - 1]
-    return df_text
+# def _get_data():
+#     df = pd.read_csv("bot_messages.csv")
+#     recap_mask = ["🏁 • 🆚" in x and "@" not in x and "🤖" not in x for x in df["message"].fillna("")]
+#     df_text = df[recap_mask]['message'][:: - 1]
+#     return df_text
 
 
-def _extract_matches(text: str, previous_date: str | None) -> list[dict]:
-    if not text:
-        return []
+# def _extract_matches(text: str, previous_date: str | None) -> list[dict]:
+#     if not text:
+#         return []
 
-    text = str(text)
-    date_match = re.search(r"Today's Matches \((\d{2}-\d{2}-\d{4})\)", text)
-    match_date = date_match.group(1) if date_match else previous_date
+#     text = str(text)
+#     date_match = re.search(r"Today's Matches \((\d{2}-\d{2}-\d{4})\)", text)
+#     match_date = date_match.group(1) if date_match else previous_date
 
-    rows = []
+#     rows = []
 
-    # Divide il testo in blocchi, uno per match
-    blocks = re.split(r'(?=🏁\s*•\s*🆚)', text)
+#     # Divide il testo in blocchi, uno per match
+#     blocks = re.split(r'(?=🏁\s*•\s*🆚)', text)
 
-    for block in blocks:
-        block = block.strip()
+#     for block in blocks:
+#         block = block.strip()
 
-        # Salta tutto ciò che non è un blocco match valido
-        if not block.startswith("🏁"):
-            continue
+#         # Salta tutto ciò che non è un blocco match valido
+#         if not block.startswith("🏁"):
+#             continue
 
-        teams_match = re.search(r"🏁\s*•\s*🆚\s*(.*?)\s*-\s*(.*?)\n", block)
-        time_match = re.search(r"🕒\s*Time:\s*(.*?)\n", block)
-        league_match = re.search(r"🏆\s*League:\s*(.*?)\n", block)
-        match_id_match = re.search(r"🆔\s*Match ID:\s*(\S+)", block)
-        goal_match = re.search(r'G\((\d+)-(\d+)\)', block)
+#         teams_match = re.search(r"🏁\s*•\s*🆚\s*(.*?)\s*-\s*(.*?)\n", block)
+#         time_match = re.search(r"🕒\s*Time:\s*(.*?)\n", block)
+#         league_match = re.search(r"🏆\s*League:\s*(.*?)\n", block)
+#         match_id_match = re.search(r"🆔\s*Match ID:\s*(\S+)", block)
+#         goal_match = re.search(r'G\((\d+)-(\d+)\)', block)
 
-        strategies_match = re.search(
-            r"[🧩🧠]\s*Strategies:\s*\n(.*?)(?=\n\s*🆔\s*Match ID:|\Z)",
-            block,
-            re.S
-        )
+#         strategies_match = re.search(
+#             r"[🧩🧠]\s*Strategies:\s*\n(.*?)(?=\n\s*🆔\s*Match ID:|\Z)",
+#             block,
+#             re.S
+#         )
 
-        # Se il blocco è incompleto, skippalo
-        if not all([teams_match, time_match, league_match, strategies_match, match_id_match]):
-            continue
+#         # Se il blocco è incompleto, skippalo
+#         if not all([teams_match, time_match, league_match, strategies_match, match_id_match]):
+#             continue
 
-        home_team = teams_match.group(1).strip()
-        away_team = teams_match.group(2).strip()
-        try:
-            goal_home = goal_match.group(1)
-            goal_away = goal_match.group(2)
-        except:
-            goal_home = None
-            goal_away = None
+#         home_team = teams_match.group(1).strip()
+#         away_team = teams_match.group(2).strip()
+#         try:
+#             goal_home = goal_match.group(1)
+#             goal_away = goal_match.group(2)
+#         except:
+#             goal_home = None
+#             goal_away = None
 
-        time = time_match.group(1).strip()
-        league = league_match.group(1).strip()
-        match_id = match_id_match.group(1).strip()
-        strategies_block = strategies_match.group(1)
+#         time = time_match.group(1).strip()
+#         league = league_match.group(1).strip()
+#         match_id = match_id_match.group(1).strip()
+#         strategies_block = strategies_match.group(1)
 
-        for line in strategies_block.splitlines():
-            line = line.strip()
-            if not line:
-                continue
+#         for line in strategies_block.splitlines():
+#             line = line.strip()
+#             if not line:
+#                 continue
 
-            m = re.match(r"([✅❌❓])\s*(.*?)\s*\(([+-]?\d+(?:\.\d+)?)\)\s*$", line)
-            if not m:
-                continue
+#             m = re.match(r"([✅❌❓])\s*(.*?)\s*\(([+-]?\d+(?:\.\d+)?)\)\s*$", line)
+#             if not m:
+#                 continue
 
-            icon, strategy, ret = m.groups()
+#             icon, strategy, ret = m.groups()
 
-            # Skippa strategie con ❓
-            if icon == "❓":
-                continue
+#             # Skippa strategie con ❓
+#             if icon == "❓":
+#                 continue
 
-            rows.append({
-                "date": match_date,
-                "match_id": match_id,
-                "time": time,
-                "league": league,
-                "home_team": home_team,
-                "away_team": away_team,
-                "goal_home": goal_home,
-                "goal_away": goal_away,
-                "strategy": strategy.strip(),
-                "result": True if icon == "✅" else False,
-                "return": float(ret),
-            })
-    return rows
-
-
-def _normalize_strategies(strategy):
-    if strategy == "Win X2 HT":
-        return "Win x2 HT"
-    if strategy == "Over 1.5 (M-2X)":
-        return "Over 1.5 (M2-X)"
-    return strategy
+#             rows.append({
+#                 "date": match_date,
+#                 "match_id": match_id,
+#                 "time": time,
+#                 "league": league,
+#                 "home_team": home_team,
+#                 "away_team": away_team,
+#                 "goal_home": goal_home,
+#                 "goal_away": goal_away,
+#                 "strategy": strategy.strip(),
+#                 "result": True if icon == "✅" else False,
+#                 "return": float(ret),
+#             })
+#     return rows
 
 
-def get_match_df(filter_league: bool = False):
-    """
-    filter_league (bool): Filter out no more used leagues
-    """
-    df_text = _get_data()
-    tot_matches = list()
-    previous_date = None
-    for row in df_text.values:
-        item = _extract_matches(row, previous_date=previous_date)
-        for d in item:
-            if d["date"]:
-                previous_date = d["date"]
-        tot_matches += item
+# def _normalize_strategies(strategy):
+#     if strategy == "Win X2 HT":
+#         return "Win x2 HT"
+#     if strategy == "Over 1.5 (M-2X)":
+#         return "Over 1.5 (M2-X)"
+#     return strategy
 
-    df_final = pd.DataFrame(tot_matches)
 
-    df_final = df_final.set_index("match_id", drop=True)
-    df_final["date"] = [datetime.strptime(x, "%d-%m-%Y") if x else None for x in df_final["date"]]
-    df_final["date"] = df_final["date"].fillna(max(df_final["date"].dropna()))
+# def get_match_df(filter_league: bool = False):
+#     """
+#     filter_league (bool): Filter out no more used leagues
+#     """
+#     df_text = _get_data()
+#     tot_matches = list()
+#     previous_date = None
+#     for row in df_text.values:
+#         item = _extract_matches(row, previous_date=previous_date)
+#         for d in item:
+#             if d["date"]:
+#                 previous_date = d["date"]
+#         tot_matches += item
 
-    df_final["week"] = df_final["date"].dt.to_period("W")
-    df_final["goal_home"] = df_final["goal_home"].astype(int, errors="ignore")
-    df_final["goal_away"] = df_final["goal_away"].astype(int, errors="ignore")
+#     df_final = pd.DataFrame(tot_matches)
+
+#     df_final = df_final.set_index("match_id", drop=True)
+#     df_final["date"] = [datetime.strptime(x, "%d-%m-%Y") if x else None for x in df_final["date"]]
+#     df_final["date"] = df_final["date"].fillna(max(df_final["date"].dropna()))
+
+#     df_final["week"] = df_final["date"].dt.to_period("W")
+#     df_final["goal_home"] = df_final["goal_home"].astype(int, errors="ignore")
+#     df_final["goal_away"] = df_final["goal_away"].astype(int, errors="ignore")
     
-    # Dropping DNB 1 and DNB 2 tied games
-    other_strategies_mask = [not x for x in df_final['strategy'].isin(["DNB 1", "DNB 2"])]
-    dnb_mask = (df_final['strategy'].isin(["DNB 1", "DNB 2"]) & (df_final['goal_home'] != df_final['goal_away']))
-    df_final = df_final[other_strategies_mask | dnb_mask]
+#     # Dropping DNB 1 and DNB 2 tied games
+#     other_strategies_mask = [not x for x in df_final['strategy'].isin(["DNB 1", "DNB 2"])]
+#     dnb_mask = (df_final['strategy'].isin(["DNB 1", "DNB 2"]) & (df_final['goal_home'] != df_final['goal_away']))
+#     df_final = df_final[other_strategies_mask | dnb_mask]
 
 
-    df_final = df_final.sort_values("date") 
+#     df_final = df_final.sort_values("date") 
 
-    monday_start = df_final["date"].min() - pd.to_timedelta(df_final["date"].min().weekday(), unit="D")
-    df_final["week"] = ((df_final["date"] - monday_start).dt.days // 7) + 1
+#     monday_start = df_final["date"].min() - pd.to_timedelta(df_final["date"].min().weekday(), unit="D")
+#     df_final["week"] = ((df_final["date"] - monday_start).dt.days // 7) + 1
 
-    if filter_league:
-        # Filter out no more used leagues
-        last_week = max(df_final["week"])
-        available_leagues = df_final[df_final["week"] == last_week]["league"].unique()
-        df_final = df_final[df_final["league"].isin(available_leagues)]
+#     if filter_league:
+#         # Filter out no more used leagues
+#         last_week = max(df_final["week"])
+#         available_leagues = df_final[df_final["week"] == last_week]["league"].unique()
+#         df_final = df_final[df_final["league"].isin(available_leagues)]
 
-    df_final["strategy"] = [_normalize_strategies(x) for x in df_final["strategy"]]
-    return df_final
+#     df_final["strategy"] = [_normalize_strategies(x) for x in df_final["strategy"]]
+#     return df_final
 
 
 def analyze_strategies(
